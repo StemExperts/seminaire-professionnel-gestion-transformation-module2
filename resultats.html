@@ -359,6 +359,9 @@ tr:last-child td { border-bottom: none; }
 <div class="page" id="page"></div>
 
 <script>
+// ── CSV URL (same as dashboard) ───────────────────────────────────────────────
+const CSV_URL = 'https://corsproxy.io/?url=' + encodeURIComponent('https://sheet.zohopublic.com/sheet/published/k9dlp18691e0ce0944a07af1f2ae69379be4c?download=csv&sheetname=Feuille1');
+
 // ── MATRIX DATA ────────────────────────────────────────────────────────────────
 const MX = {
   '23-30': {
@@ -386,20 +389,50 @@ const V_Q = [
   {lbl:'…pose-t-elle des problèmes à vos supérieurs hiérarchiques ?',   max:5},
 ];
 const AO_Q = [
-  {lbl:'Votre organisation est-elle aux prises avec d\'autres problèmes qui exigent plus d\'énergie ?', max:5, inv:true},
-  {lbl:'Le temps consacré à ce dossier pourrait-il compromettre d\'autres dossiers prioritaires ?',      max:5, inv:true},
-  {lbl:'Disposez-vous du temps requis pour prendre en charge la gestion de ce dossier ?',                max:5, inv:false},
-  {lbl:'Le changement épouse-t-il les orientations explicites de votre organisation ?',                  max:5, inv:false},
-  {lbl:'Le financement requis pour réaliser ce changement est-il disponible ?',                          max:5, inv:false},
-  {lbl:'Les solutions envisagées seront-elles plus efficaces que la formule actuelle ?',                 max:5, inv:false},
+  {lbl:'Votre organisation est-elle aux prises avec d\'autres problèmes qui exigent plus d\'énergie ?', max:5},
+  {lbl:'Le temps consacré à ce dossier pourrait-il compromettre d\'autres dossiers prioritaires ?',      max:5},
+  {lbl:'Disposez-vous du temps requis pour prendre en charge la gestion de ce dossier ?',                max:5},
+  {lbl:'Le changement épouse-t-il les orientations explicites de votre organisation ?',                  max:5},
+  {lbl:'Le financement requis pour réaliser ce changement est-il disponible ?',                          max:5},
+  {lbl:'Les solutions envisagées seront-elles plus efficaces que la formule actuelle ?',                 max:5},
 ];
 
+// ── TEXT → SCORE CONVERSION ───────────────────────────────────────────────────
+const SCALE_POS = { 'Pas du tout': 1, 'Peu': 2, 'Moyennement': 3, 'Passablement': 4, 'Beaucoup': 5 };
+const V_MULT = [4, 2, 2, 1, 1]; // Weighted multipliers per V question
+const AO_INV = [true, true, false, false, false, false]; // Q1, Q2 are inverted
+
+function textToVScore(text, qi) {
+  const pos = SCALE_POS[text] || 0;
+  return pos * V_MULT[qi];
+}
+function textToAOScore(text, qi) {
+  const pos = SCALE_POS[text] || 0;
+  return AO_INV[qi] ? (6 - pos) : pos;
+}
+
+// ── CSV COLUMN NAMES ──────────────────────────────────────────────────────────
+const V_COLS = [
+  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 1. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes à la clientèle concernée? ]',
+  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 2. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes de fonctionnement au personnel concerné? ]',
+  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 3. Actuelle pourrait-elle se dégrader si le changement n\'est pas introduit maintenant? ]',
+  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 4. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes à vos partenaires ou à vos pairs? ]',
+  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 5. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes à vos supérieurs hiérarchiques? ]'
+];
+const AO_COLS = [
+  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 1. Votre organisation est-elle aux prises avec d\'autres problèmes/situations qui exigent du personnel plus d\'énergie qu\'à l\'habitude? ]',
+  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 2. Le temps et l\'énergie qui seraient consacrés à ce dossier pourraient-ils compromettre l\'évolution d\'autres dossiers prioritaires? ]',
+  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 3. Disposez-vous du temps requis pour prendre en charge la gestion et le suivi de ce dossier ou pour encadrer régulièrement les personnes qui vont s\'en charger? ]',
+  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 4. Le changement introduit épouse-t-il les orientations explicites de votre organisation? ]',
+  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 5. Le financement requis pour réaliser ce changement est-il disponible? ]',
+  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 6. Estimez-vous que les solutions envisagées seront plus efficaces que la formule en place actuellement? ]'
+];
+const V_SCORE_COL  = 'Page 2 : Les indicateurs de vulnérabilité de l\'organisation (V)  [ Score ]';
+const AO_SCORE_COL = 'Page 3 : Les indicateurs d\'opportunité du changement (A – O)  [ Score ]';
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
 function gV(v)  { return v>=36?'36-50':v>=20?'20-35':'5-19'; }
 function gAO(a) { return a>=23?'23-30':a>=14?'14-22':'6-13'; }
-
-function potColor(css) {
-  return {c_el:'#1a7a4a',c_ae:'#2d9f5e',c_mo:'#e8a020',c_fa:'#c0392b',c_tf:'#922b21'}[css.replace('-','_')] || '#002169';
-}
 
 function barColor(pct) {
   if (pct >= 70) return 'var(--blue)';
@@ -407,32 +440,70 @@ function barColor(pct) {
   return 'var(--red)';
 }
 
-// ── READ PARAMS ────────────────────────────────────────────────────────────────
-function params() {
+// ── CSV PARSER ────────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+  return lines.slice(1).map(line => {
+    const vals = []; let cur = '', inQ = false;
+    for (let c of line) {
+      if (c === '"') inQ = !inQ;
+      else if (c === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] || '');
+    return obj;
+  });
+}
+
+// ── GET PARTICIPANT IDENTITY FROM URL ─────────────────────────────────────────
+function getIdentity() {
   const p = new URLSearchParams(window.location.search);
-  const prenom = p.get('Prénom') || p.get('prenom') || '';
-  const nom    = p.get('Nom')    || p.get('nom')    || '';
-  const full   = [prenom, nom].filter(Boolean).join(' ');
   return {
-    name:    full    || 'Participant',
-    email:   p.get('E-mail')          || p.get('email')        || '',
-    dept:    p.get('departement') || p.get('Département') || p.get('dept') || '',
-    pos:     p.get('poste')       || p.get('Poste')       || p.get('pos')  || '',
-    company: p.get('pharmacie')   || p.get('Pharmacie')   || p.get('company') || '',
-    date:    p.get('Date du workshop')|| p.get('date')         || '',
-    // Vulnerability scores (weighted pts per question from Zoho scoring)
-    v1:  +p.get('v1')  || 0,
-    v2:  +p.get('v2')  || 0,
-    v3:  +p.get('v3')  || 0,
-    v4:  +p.get('v4')  || 0,
-    v5:  +p.get('v5')  || 0,
-    // Opportunity scores
-    ao1: +p.get('ao1') || 0,
-    ao2: +p.get('ao2') || 0,
-    ao3: +p.get('ao3') || 0,
-    ao4: +p.get('ao4') || 0,
-    ao5: +p.get('ao5') || 0,
-    ao6: +p.get('ao6') || 0,
+    prenom: p.get('prenom') || p.get('Prénom') || '',
+    nom:    p.get('nom')    || p.get('Nom')    || '',
+  };
+}
+
+// ── FIND PARTICIPANT IN CSV ───────────────────────────────────────────────────
+function findParticipant(rows, prenom, nom) {
+  const normalize = s => s.toLowerCase().trim();
+  // Try exact match first
+  let match = rows.find(r =>
+    normalize(r['Prénom']) === normalize(prenom) &&
+    normalize(r['Nom']) === normalize(nom)
+  );
+  if (match) return match;
+  // Try partial match (prenom only)
+  if (prenom) {
+    match = rows.find(r => normalize(r['Prénom']) === normalize(prenom));
+    if (match) return match;
+  }
+  // Return last entry as fallback (most recent submission)
+  return rows.length ? rows[rows.length - 1] : null;
+}
+
+// ── PROCESS ROW → DATA OBJECT ─────────────────────────────────────────────────
+function processRow(row) {
+  const vScore  = parseFloat(row[V_SCORE_COL]) || 0;
+  const aoScore = parseFloat(row[AO_SCORE_COL]) || 0;
+
+  // Individual question scores from text answers
+  const vQuestions  = V_COLS.map((col, i) => textToVScore(row[col], i));
+  const aoQuestions = AO_COLS.map((col, i) => textToAOScore(row[col], i));
+
+  return {
+    name:    [row['Prénom'], row['Nom']].filter(Boolean).join(' ') || 'Participant',
+    email:   row['E-mail'] || '',
+    dept:    row['Département'] || '',
+    pos:     row['Poste'] || '',
+    company: row['Pharmacie'] || '',
+    date:    row['Date du workshop'] || '',
+    vScore, aoScore,
+    P: Math.round(vScore * aoScore),
+    vQuestions, aoQuestions,
   };
 }
 
@@ -440,20 +511,17 @@ function params() {
 function renderMatrix(vScore, aoScore) {
   const vR = gV(vScore), aoR = gAO(aoScore);
 
-  // Column headers — Vulnérabilité ranges with readable labels
   const VC = [
     { k:'36-50', range:'36 à 50', label:'Vulnérabilité élevée' },
     { k:'20-35', range:'20 à 35', label:'Vulnérabilité modérée' },
     { k:'5-19',  range:'5 à 19',  label:'Vulnérabilité faible' },
   ];
-  // Row headers — Opportunité ranges with readable labels
   const AOR = [
     { k:'23-30', range:'23 à 30', label:'Opportunité élevée' },
     { k:'14-22', range:'14 à 22', label:'Opportunité modérée' },
     { k:'6-13',  range:'6 à 13',  label:'Opportunité faible' },
   ];
 
-  // Top-left corner cell
   let h = `<div class="mh blank" style="display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:6px;">
     <div style="font-size:9px;color:var(--grey);text-align:center;line-height:1.4;">
       <div style="font-weight:700;color:var(--ink-soft)">Vulnérabilité →</div>
@@ -461,7 +529,6 @@ function renderMatrix(vScore, aoScore) {
     </div>
   </div>`;
 
-  // Column headers
   VC.forEach(col => {
     h += `<div class="mh">
       <span class="mh-range">${col.range} /50</span>
@@ -469,7 +536,6 @@ function renderMatrix(vScore, aoScore) {
     </div>`;
   });
 
-  // Rows
   AOR.forEach(row => {
     h += `<div class="mao">
       <span class="mao-range">${row.range} /30</span>
@@ -488,33 +554,32 @@ function renderMatrix(vScore, aoScore) {
   return h;
 }
 
+// ── LOADING STATE ─────────────────────────────────────────────────────────────
+function showLoading() {
+  document.getElementById('page').innerHTML = `
+    <div style="text-align:center;padding:120px 20px;">
+      <div style="font-size:2.5rem;margin-bottom:16px">⏳</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:12px;">Chargement de vos résultats…</h2>
+      <p style="color:#777;font-size:14px;">Veuillez patienter quelques secondes.</p>
+    </div>`;
+}
+
+function showError(msg) {
+  document.getElementById('page').innerHTML = `
+    <div class="error-wrap">
+      <div style="font-size:3rem;margin-bottom:16px">📋</div>
+      <h2>${msg || 'Aucun résultat trouvé'}</h2>
+      <p>Cette page doit être accédée via le lien de fin de sondage.<br>Veuillez soumettre le sondage pour accéder à vos résultats.</p>
+    </div>`;
+}
+
 // ── MAIN RENDER ────────────────────────────────────────────────────────────────
-function render() {
-  const d = params();
-
-  // Check we have at least some score data
-  const hasData = d.v1||d.v2||d.v3||d.v4||d.v5||d.ao1||d.ao2||d.ao3||d.ao4||d.ao5||d.ao6;
-  if (!hasData && d.name === 'Participant') {
-    document.getElementById('page').innerHTML = `
-      <div class="error-wrap">
-        <div style="font-size:3rem;margin-bottom:16px">📋</div>
-        <h2>Aucun résultat trouvé</h2>
-        <p>Cette page doit être accédée via le lien de fin de sondage.<br>Veuillez soumettre le sondage pour accéder à vos résultats.</p>
-      </div>`;
-    return;
-  }
-
-  const vScore  = d.v1 + d.v2 + d.v3 + d.v4 + d.v5;
-  const aoScore = d.ao1 + d.ao2 + d.ao3 + d.ao4 + d.ao5 + d.ao6;
-  const P       = Math.round(vScore * aoScore);
-  const vR      = gV(vScore);
-  const aoR     = gAO(aoScore);
-  const pot     = MX[aoR][vR];
-
+function renderResults(d) {
+  const { vScore, aoScore, P, vQuestions, aoQuestions, name } = d;
+  const vR  = gV(vScore);
+  const aoR = gAO(aoScore);
+  const pot = MX[aoR][vR];
   const meta = [d.pos, d.dept, d.company, d.date].filter(Boolean).join(' · ');
-
-  const vQuestions  = [d.v1,d.v2,d.v3,d.v4,d.v5];
-  const aoQuestions = [d.ao1,d.ao2,d.ao3,d.ao4,d.ao5,d.ao6];
 
   document.getElementById('page').innerHTML = `
 
@@ -522,7 +587,7 @@ function render() {
     <div class="header">
       <span class="eyebrow">Formation Pratique en Gestion · Module 2</span>
       <h1>La pertinence du changement</h1>
-      <p class="participant-line" id="participantLine"><strong>${d.name}</strong>${meta ? ` · <span style="color:#777">${meta}</span>` : ''}</p>
+      <p class="participant-line"><strong>${name}</strong>${meta ? ` · <span style="color:#777">${meta}</span>` : ''}</p>
       <div class="divider"></div>
     </div>
 
@@ -682,10 +747,50 @@ function render() {
       Collerette, P., Lauzier, M., Schneider, R. — <em>Le pilotage du changement</em>, Presses de l'Université du Québec, 3e éd., 2021
     </div>
   `;
-
 }
 
-render();
+// ── MAIN LOAD FUNCTION (with retry for Zoho sync delay) ───────────────────────
+async function loadResults(attempt) {
+  attempt = attempt || 1;
+  const { prenom, nom } = getIdentity();
+
+  if (!prenom && !nom) {
+    showError('Aucun participant identifié');
+    return;
+  }
+
+  showLoading();
+
+  try {
+    const res = await fetch(CSV_URL);
+    const text = await res.text();
+    const rows = parseCSV(text).filter(r => r['Prénom'] || r['Nom']);
+    const row = findParticipant(rows, prenom, nom);
+
+    if (!row) {
+      // Retry up to 3 times with 4s delay (Zoho Sheet sync can be slow)
+      if (attempt < 3) {
+        setTimeout(() => loadResults(attempt + 1), 4000);
+        return;
+      }
+      showError('Participant non trouvé dans les données');
+      return;
+    }
+
+    const d = processRow(row);
+    renderResults(d);
+
+  } catch(e) {
+    console.error('Erreur de chargement:', e);
+    if (attempt < 3) {
+      setTimeout(() => loadResults(attempt + 1), 4000);
+      return;
+    }
+    showError('Erreur de chargement des données');
+  }
+}
+
+loadResults();
 </script>
 </body>
 </html>
