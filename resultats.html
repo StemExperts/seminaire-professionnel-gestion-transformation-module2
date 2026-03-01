@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Résultats – La Pertinence du Changement</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --ink:         #002169;
+  --ink-soft:    #1d71b8;
+  --cream:       #f5f7fa;
+  --cream-dark:  #e8ecf2;
+  --gold:        #ffed00;
+  --gold-light:  #fff176;
+  --gold-bg:     #fffde7;
+  --blue:        #1d71b8;
+  --blue-light:  #d0e4f5;
+  --teal:        #0090ac;
+  --teal-light:  #d0eef3;
+  --green:       #95c11f;
+  --green-light: #e8f5c0;
+  --red:         #c0392b;
+  --orange:      #e8a020;
+  --white:       #ffffff;
+  --shadow:      0 4px 28px rgba(0,33,105,0.10);
+  --shadow-lg:   0 10px 48px rgba(0,33,105,0.18);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+}
+body::before {
+  content: '';
+  position: fixed; top: -180px; right: -180px;
+  width: 520px; height: 520px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,237,0,0.07) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+  position: relative; z-index: 1;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.header {
+  text-align: center;
+  margin-bottom: 44px;
+  animation: fadeUp .65s ease both;
+}
+.eyebrow {
+  font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 600; margin-bottom: 12px;
+  display: block;
+}
+.header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(24px,5vw,40px); font-weight: 700;
+  line-height: 1.2; margin-bottom: 10px;
+}
+.participant-line {
+  font-size: 14px; color: var(--ink-soft);
+  margin-top: 6px;
+}
+.participant-line strong { color: var(--blue); font-weight: 600; }
+.divider {
+  width: 52px; height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  margin: 18px auto 0; border-radius: 2px;
+}
+
+/* ── Summary cards ────────────────────────────────────────── */
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px; margin-bottom: 24px;
+  animation: fadeUp .65s .1s ease both;
+}
+@media(max-width:600px){ .summary-row { grid-template-columns: 1fr; } }
+
+.summary-card {
+  background: var(--white);
+  border-radius: 14px; padding: 24px 18px 20px;
+  box-shadow: var(--shadow); text-align: center;
+  position: relative; overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.summary-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.summary-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 4px;
+}
+.summary-card.v-card::before    { background: linear-gradient(90deg, var(--blue), #4a90d9); }
+.summary-card.ao-card::before   { background: linear-gradient(90deg, var(--teal), #00b8d4); }
+.summary-card.p-card::before    { background: linear-gradient(90deg, var(--ink), var(--blue)); }
+
+.sc-label {
+  font-size: 10px; letter-spacing: .15em; text-transform: uppercase;
+  font-weight: 600; margin-bottom: 10px;
+  color: var(--ink-soft);
+}
+.sc-score {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px; font-weight: 700; line-height: 1;
+}
+.sc-denom { font-size: 14px; color: #777; margin-left: 2px; }
+.sc-sub { font-size: 12px; color: #888; margin-top: 4px; }
+
+/* ── Potential block ──────────────────────────────────────── */
+.potential-wrap {
+  background: var(--ink);
+  border-radius: 16px; padding: 32px 28px;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 24px;
+  position: relative; overflow: hidden;
+  animation: fadeUp .65s .18s ease both;
+}
+.potential-wrap::before {
+  content: ''; position: absolute;
+  right: -60px; top: -60px;
+  width: 240px; height: 240px; border-radius: 50%;
+  border: 50px solid rgba(255,237,0,0.07);
+}
+.potential-wrap::after {
+  content: ''; position: absolute;
+  right: 60px; bottom: -80px;
+  width: 180px; height: 180px; border-radius: 50%;
+  border: 30px solid rgba(255,255,255,0.04);
+}
+.pot-eyebrow {
+  font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--gold); font-weight: 600; margin-bottom: 10px;
+}
+.pot-level {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(24px,4vw,34px); font-weight: 700;
+  color: var(--white); margin-bottom: 20px; line-height: 1.2;
+}
+.pot-divider {
+  width: 40px; height: 3px; background: var(--gold);
+  border-radius: 2px; margin-bottom: 20px;
+}
+.pot-bullets {
+  list-style: none; display: flex; flex-direction: column; gap: 9px;
+  position: relative; z-index: 1;
+}
+.pot-bullets li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 14px; line-height: 1.55; color: rgba(255,255,255,0.85);
+}
+.pot-bullets li::before {
+  content: '→'; color: var(--gold); font-weight: 700;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+/* ── Matrix ───────────────────────────────────────────────── */
+.matrix-wrap {
+  background: var(--white);
+  border-radius: 16px; padding: 28px 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+  animation: fadeUp .65s .25s ease both;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 700; margin-bottom: 20px;
+}
+/* Matrix axis labels */
+.matrix-axis-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-soft); margin-bottom: 8px;
+}
+.matrix-axis-title span {
+  background: var(--ink); color: var(--white);
+  padding: 3px 10px; border-radius: 20px; font-size: 10px;
+}
+.mgrid {
+  display: grid;
+  grid-template-columns: 140px repeat(3,1fr);
+  gap: 6px;
+}
+.mh {
+  background: var(--ink); color: var(--white);
+  font-size: 11px; font-weight: 600; text-align: center;
+  padding: 10px 8px; border-radius: 8px; line-height: 1.4;
+}
+.mh .mh-range {
+  display: block; font-size: 13px; font-weight: 700;
+  font-family: 'Playfair Display', serif; margin-bottom: 2px;
+}
+.mh .mh-label { display: block; font-size: 9px; opacity: 0.7; letter-spacing: .05em; }
+.mh.blank { background: transparent; }
+.mao {
+  background: var(--ink); color: var(--white);
+  font-size: 11px; font-weight: 600;
+  padding: 10px 12px; border-radius: 8px;
+  display: flex; flex-direction: column; align-items: flex-start;
+  justify-content: center; line-height: 1.4; gap: 2px;
+}
+.mao .mao-range {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px; font-weight: 700;
+}
+.mao .mao-label { font-size: 9px; opacity: 0.7; letter-spacing: .05em; }
+.mc {
+  border-radius: 8px; padding: 14px 10px;
+  text-align: center; font-size: 12px; font-weight: 600;
+  min-height: 72px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  color: white; opacity: 0.28; transition: transform .2s, box-shadow .2s;
+}
+.mc.active {
+  opacity: 1; transform: scale(1.05);
+  box-shadow: 0 0 0 3px var(--gold), 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 2; position: relative;
+}
+.mc .mc-star { font-size: 16px; }
+.mc .mc-name { font-size: 11px; font-weight: 700; line-height: 1.3; }
+.c-el  { background: #1a7a4a; }
+.c-ae  { background: #2d9f5e; }
+.c-mo  { background: #e8a020; }
+.c-fa  { background: #c0392b; }
+.c-tf  { background: #922b21; }
+
+/* Matrix legend */
+.matrix-legend {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px;
+}
+.ml-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--ink);
+}
+.ml-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* ── Formula note ─────────────────────────────────────────── */
+.formula-note {
+  background: var(--blue-light);
+  border-left: 4px solid var(--blue);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px; margin-bottom: 24px;
+  font-size: 13px; color: var(--ink); line-height: 1.7;
+  animation: fadeUp .65s .28s ease both;
+}
+.formula-note strong { font-family: 'Playfair Display', serif; font-size: 15px; }
+
+/* ── Detail sections ──────────────────────────────────────── */
+.sections-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 24px;
+  animation: fadeUp .65s .32s ease both;
+}
+@media(max-width:640px){ .sections-grid { grid-template-columns: 1fr; } }
+
+.section-card {
+  background: var(--white);
+  border-radius: 14px; padding: 22px 20px 20px;
+  box-shadow: var(--shadow);
+  position: relative; overflow: hidden;
+  transition: transform .2s;
+}
+.section-card:hover { transform: translateY(-2px); }
+.section-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 4px;
+}
+.sc-v::before  { background: linear-gradient(90deg,var(--blue),#4a90d9); }
+.sc-ao::before { background: linear-gradient(90deg,var(--teal),#00b8d4); }
+
+.sc-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 16px;
+}
+.sc-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px; font-weight: 700; line-height: 1.3; flex: 1;
+}
+.sc-badge {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 700; white-space: nowrap; margin-left: 12px;
+}
+.sc-denom-sm { font-size: 12px; color: #888; }
+
+.q-row { margin-bottom: 11px; }
+.q-label {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: #555; margin-bottom: 4px; line-height: 1.4;
+}
+.q-label .q-val { font-weight: 700; color: var(--ink); white-space: nowrap; margin-left: 8px; }
+.q-label .q-inv { color: var(--teal); font-size: 10px; }
+.bar-track {
+  height: 7px; background: var(--cream-dark);
+  border-radius: 4px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 1s ease;
+}
+
+/* ── Score table ──────────────────────────────────────────── */
+.table-wrap {
+  background: var(--white);
+  border-radius: 16px; padding: 28px 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+  animation: fadeUp .65s .38s ease both;
+  overflow-x: auto;
+}
+.table-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 700; margin-bottom: 16px;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  text-align: left; padding: 8px 12px;
+  background: var(--cream); font-weight: 600;
+  font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+td {
+  padding: 10px 12px; border-bottom: 1px solid var(--cream-dark);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+.td-score { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; }
+.td-bar { width: 100px; }
+.td-inv { font-size: 10px; color: var(--teal); font-weight: 600; }
+.total-row td { background: var(--cream-dark); font-weight: 700; }
+
+/* ── Footer ───────────────────────────────────────────────── */
+.footer {
+  text-align: center; font-size: 11px; color: #aaa;
+  margin-top: 48px; animation: fadeUp .65s .5s ease both;
+}
+
+/* ── Error ────────────────────────────────────────────────── */
+.error-wrap {
+  text-align: center; padding: 80px 20px;
+}
+.error-wrap h2 {
+  font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 12px;
+}
+.error-wrap p { color: #777; font-size: 14px; line-height: 1.7; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+<div class="page" id="page"></div>
+
+<script>
+// ── MATRIX DATA ────────────────────────────────────────────────────────────────
+const MX = {
+  '23-30': {
+    '36-50': { l:'Potentiel élevé',       c:'c-el', b:['Il est nécessaire et pertinent d\'agir maintenant','Ne pas le faire pourrait mettre l\'organisation en péril','Les conditions semblent réunies pour réussir','Il est approprié de s\'y mettre dès maintenant','Procéder assez rapidement pour profiter de la fenêtre d\'opportunité'] },
+    '20-35': { l:'Potentiel modéré',       c:'c-mo', b:['Les conditions semblent réunies','L\'objet de changement pourrait se faire déclasser par d\'autres priorités','Procéder assez rapidement','Mobiliser le personnel en attirant l\'attention sur les éléments qui justifient le changement'] },
+    '5-19':  { l:'Potentiel faible',       c:'c-fa', b:['L\'effort risque de s\'essouffler rapidement','L\'objet de changement n\'est pas suffisamment problématique pour le personnel concerné','Attendre qu\'il devienne problématique','Ou soulever les dangers potentiels dans le futur'] }
+  },
+  '14-22': {
+    '36-50': { l:'Potentiel assez élevé',  c:'c-ae', b:['Souhaitable d\'agir maintenant','Conditions internes plutôt favorables','Utile de s\'assurer que les ressources et le temps requis y sont véritablement consacrés et de façon soutenue'] },
+    '20-35': { l:'Potentiel modéré',       c:'c-mo', b:['Possible d\'agir mais avec prudence','La situation justifie un effort','Conditions internes plutôt favorables','Se montrer prudent','Démontrer que l\'envergure n\'est pas démesurée','Veiller à ce que les ressources y soient vraiment consacrées sans être récupérées pour d\'autres priorités'] },
+    '5-19':  { l:'Potentiel très faible',  c:'c-tf', b:['Probabilités de succès faibles','Pas suffisamment problématique','Conditions internes modérément favorables','Hasardeux','Attendre que la situation devienne plus problématique ou mettre en relief les dangers du statu quo','Veiller à ce que les ressources y soient vraiment consacrées sans être récupérées pour d\'autres priorités'] }
+  },
+  '6-13': {
+    '36-50': { l:'Potentiel modéré',       c:'c-mo', b:['Nécessaire d\'agir','Conditions internes constituent un frein','Les ressources et le temps non disponibles','Examiner le fonctionnement pour dégager les ressources nécessaires pour ne pas surcharger l\'organisation et éparpiller les énergies'] },
+    '20-35': { l:'Potentiel faible',       c:'c-fa', b:['Probabilités de succès faibles','Problématiques suffisamment importantes mais les conditions internes ne sont pas favorables','Mettre en relief les lacunes de la situation actuelle et les dangers du statu quo','Dégager temps et ressources en veillant à ce que d\'autres priorités ne viennent pas les détourner'] },
+    '5-19':  { l:'Potentiel très faible',  c:'c-tf', b:['Risque élevé','Attendre que la situation devienne problématique et que les conditions internes permettent de dégager temps et ressources nécessaires'] }
+  }
+};
+
+const V_Q = [
+  {lbl:'…pose-t-elle des problèmes à la clientèle concernée ?',     max:20},
+  {lbl:'…pose-t-elle des problèmes de fonctionnement au personnel ?',max:10},
+  {lbl:'…pourrait-elle se dégrader si le changement n\'est pas introduit maintenant ?', max:10},
+  {lbl:'…pose-t-elle des problèmes à vos partenaires ou à vos pairs ?', max:5},
+  {lbl:'…pose-t-elle des problèmes à vos supérieurs hiérarchiques ?',   max:5},
+];
+const AO_Q = [
+  {lbl:'Votre organisation est-elle aux prises avec d\'autres problèmes qui exigent plus d\'énergie ?', max:5, inv:true},
+  {lbl:'Le temps consacré à ce dossier pourrait-il compromettre d\'autres dossiers prioritaires ?',      max:5, inv:true},
+  {lbl:'Disposez-vous du temps requis pour prendre en charge la gestion de ce dossier ?',                max:5, inv:false},
+  {lbl:'Le changement épouse-t-il les orientations explicites de votre organisation ?',                  max:5, inv:false},
+  {lbl:'Le financement requis pour réaliser ce changement est-il disponible ?',                          max:5, inv:false},
+  {lbl:'Les solutions envisagées seront-elles plus efficaces que la formule actuelle ?',                 max:5, inv:false},
+];
+
+function gV(v)  { return v>=36?'36-50':v>=20?'20-35':'5-19'; }
+function gAO(a) { return a>=23?'23-30':a>=14?'14-22':'6-13'; }
+
+function potColor(css) {
+  return {c_el:'#1a7a4a',c_ae:'#2d9f5e',c_mo:'#e8a020',c_fa:'#c0392b',c_tf:'#922b21'}[css.replace('-','_')] || '#002169';
+}
+
+function barColor(pct) {
+  if (pct >= 70) return 'var(--blue)';
+  if (pct >= 45) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+// ── READ PARAMS ────────────────────────────────────────────────────────────────
+function params() {
+  const p = new URLSearchParams(window.location.search);
+  const prenom = p.get('Prénom') || p.get('prenom') || '';
+  const nom    = p.get('Nom')    || p.get('nom')    || '';
+  const full   = [prenom, nom].filter(Boolean).join(' ');
+  return {
+    name:    full    || 'Participant',
+    email:   p.get('E-mail')          || p.get('email')        || '',
+    dept:    p.get('departement') || p.get('Département') || p.get('dept') || '',
+    pos:     p.get('poste')       || p.get('Poste')       || p.get('pos')  || '',
+    company: p.get('pharmacie')   || p.get('Pharmacie')   || p.get('company') || '',
+    date:    p.get('Date du workshop')|| p.get('date')         || '',
+    // Vulnerability scores (weighted pts per question from Zoho scoring)
+    v1:  +p.get('v1')  || 0,
+    v2:  +p.get('v2')  || 0,
+    v3:  +p.get('v3')  || 0,
+    v4:  +p.get('v4')  || 0,
+    v5:  +p.get('v5')  || 0,
+    // Opportunity scores
+    ao1: +p.get('ao1') || 0,
+    ao2: +p.get('ao2') || 0,
+    ao3: +p.get('ao3') || 0,
+    ao4: +p.get('ao4') || 0,
+    ao5: +p.get('ao5') || 0,
+    ao6: +p.get('ao6') || 0,
+  };
+}
+
+// ── MATRIX HTML ────────────────────────────────────────────────────────────────
+function renderMatrix(vScore, aoScore) {
+  const vR = gV(vScore), aoR = gAO(aoScore);
+
+  // Column headers — Vulnérabilité ranges with readable labels
+  const VC = [
+    { k:'36-50', range:'36 à 50', label:'Vulnérabilité élevée' },
+    { k:'20-35', range:'20 à 35', label:'Vulnérabilité modérée' },
+    { k:'5-19',  range:'5 à 19',  label:'Vulnérabilité faible' },
+  ];
+  // Row headers — Opportunité ranges with readable labels
+  const AOR = [
+    { k:'23-30', range:'23 à 30', label:'Opportunité élevée' },
+    { k:'14-22', range:'14 à 22', label:'Opportunité modérée' },
+    { k:'6-13',  range:'6 à 13',  label:'Opportunité faible' },
+  ];
+
+  // Top-left corner cell
+  let h = `<div class="mh blank" style="display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:6px;">
+    <div style="font-size:9px;color:var(--grey);text-align:center;line-height:1.4;">
+      <div style="font-weight:700;color:var(--ink-soft)">Vulnérabilité →</div>
+      <div style="color:#aaa">Score /50</div>
+    </div>
+  </div>`;
+
+  // Column headers
+  VC.forEach(col => {
+    h += `<div class="mh">
+      <span class="mh-range">${col.range} /50</span>
+      <span class="mh-label">${col.label}</span>
+    </div>`;
+  });
+
+  // Rows
+  AOR.forEach(row => {
+    h += `<div class="mao">
+      <span class="mao-range">${row.range} /30</span>
+      <span class="mao-label">${row.label}</span>
+    </div>`;
+    VC.forEach(col => {
+      const d = MX[row.k][col.k];
+      const isActive = row.k === aoR && col.k === vR;
+      h += `<div class="mc ${d.c}${isActive ? ' active' : ''}">
+        ${isActive ? '<span class="mc-star">★</span>' : ''}
+        <span class="mc-name">${d.l}</span>
+      </div>`;
+    });
+  });
+
+  return h;
+}
+
+// ── MAIN RENDER ────────────────────────────────────────────────────────────────
+function render() {
+  const d = params();
+
+  // Check we have at least some score data
+  const hasData = d.v1||d.v2||d.v3||d.v4||d.v5||d.ao1||d.ao2||d.ao3||d.ao4||d.ao5||d.ao6;
+  if (!hasData && d.name === 'Participant') {
+    document.getElementById('page').innerHTML = `
+      <div class="error-wrap">
+        <div style="font-size:3rem;margin-bottom:16px">📋</div>
+        <h2>Aucun résultat trouvé</h2>
+        <p>Cette page doit être accédée via le lien de fin de sondage.<br>Veuillez soumettre le sondage pour accéder à vos résultats.</p>
+      </div>`;
+    return;
+  }
+
+  const vScore  = d.v1 + d.v2 + d.v3 + d.v4 + d.v5;
+  const aoScore = d.ao1 + d.ao2 + d.ao3 + d.ao4 + d.ao5 + d.ao6;
+  const P       = Math.round(vScore * aoScore);
+  const vR      = gV(vScore);
+  const aoR     = gAO(aoScore);
+  const pot     = MX[aoR][vR];
+
+  const meta = [d.pos, d.dept, d.company, d.date].filter(Boolean).join(' · ');
+
+  const vQuestions  = [d.v1,d.v2,d.v3,d.v4,d.v5];
+  const aoQuestions = [d.ao1,d.ao2,d.ao3,d.ao4,d.ao5,d.ao6];
+
+  document.getElementById('page').innerHTML = `
+
+    <!-- Header -->
+    <div class="header">
+      <span class="eyebrow">Formation Pratique en Gestion · Module 2</span>
+      <h1>La pertinence du changement</h1>
+      <p class="participant-line" id="participantLine"><strong>${d.name}</strong>${meta ? ` · <span style="color:#777">${meta}</span>` : ''}</p>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-row">
+      <div class="summary-card v-card">
+        <div class="sc-label">Vulnérabilité (V)</div>
+        <div class="sc-score">${vScore}<span class="sc-denom"> / 50</span></div>
+        <div class="sc-sub">Indicateurs de vulnérabilité</div>
+      </div>
+      <div class="summary-card ao-card">
+        <div class="sc-label">Opportunité (A–O)</div>
+        <div class="sc-score">${aoScore}<span class="sc-denom"> / 30</span></div>
+        <div class="sc-sub">Indicateurs d'opportunité</div>
+      </div>
+      <div class="summary-card p-card">
+        <div class="sc-label">P = V × (A–O)</div>
+        <div class="sc-score">${P}<span class="sc-denom"> / 1500</span></div>
+        <div class="sc-sub">Potentiel de changement</div>
+      </div>
+    </div>
+
+    <!-- Potential -->
+    <div class="potential-wrap">
+      <div class="pot-eyebrow">Potentiel de changement de votre situation</div>
+      <div class="pot-level">${pot.l}</div>
+      <div class="pot-divider"></div>
+      <ul class="pot-bullets">
+        ${pot.b.map(b=>`<li>${b}</li>`).join('')}
+      </ul>
+    </div>
+
+    <!-- Matrix -->
+    <div class="matrix-wrap">
+      <div class="section-title">Votre position dans la matrice de potentiel</div>
+
+      <div class="matrix-axis-title" style="text-align:center;margin-bottom:10px;">
+        <span>Vulnérabilité de l'organisation</span> &nbsp;×&nbsp; <span>Opportunité du changement</span>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <div class="mgrid" style="min-width:480px;">${renderMatrix(vScore, aoScore)}</div>
+      </div>
+
+      <div class="matrix-legend">
+        <div class="ml-item"><div class="ml-dot" style="background:#1a7a4a"></div>Potentiel élevé</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#2d9f5e"></div>Potentiel assez élevé</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#e8a020"></div>Potentiel modéré</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#c0392b"></div>Potentiel faible</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#922b21"></div>Potentiel très faible</div>
+        <div class="ml-item"><div class="ml-dot" style="background:var(--gold);border:1px solid #ccc"></div>Votre position ★</div>
+      </div>
+    </div>
+
+    <!-- Formula note -->
+    <div class="formula-note">
+      <strong>P = V × (A–O)</strong> &nbsp;—&nbsp;
+      Vulnérabilité <strong>${vScore}/50</strong> &nbsp;×&nbsp; Opportunité <strong>${aoScore}/30</strong> &nbsp;=&nbsp; <strong>${P}</strong>
+      &nbsp;|&nbsp; V : <em>${vR}</em> · A–O : <em>${aoR}</em>
+    </div>
+
+    <!-- Detail sections -->
+    <div class="sections-grid">
+
+      <!-- Vulnerability -->
+      <div class="section-card sc-v">
+        <div class="sc-header">
+          <div class="sc-name">Indicateurs de<br>vulnérabilité (V)</div>
+          <div class="sc-badge" style="color:var(--blue)">${vScore}<span class="sc-denom-sm">/50</span></div>
+        </div>
+        ${vQuestions.map((pts, i) => {
+          const pct = Math.round((pts / V_Q[i].max) * 100);
+          return `<div class="q-row">
+            <div class="q-label">
+              <span>Q${i+1}. ${V_Q[i].lbl}</span>
+              <span class="q-val">${pts}/${V_Q[i].max}</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${barColor(pct)}"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- Opportunity -->
+      <div class="section-card sc-ao">
+        <div class="sc-header">
+          <div class="sc-name">Indicateurs<br>d'opportunité (A–O)</div>
+          <div class="sc-badge" style="color:var(--teal)">${aoScore}<span class="sc-denom-sm">/30</span></div>
+        </div>
+        ${aoQuestions.map((pts, i) => {
+          const pct = Math.round((pts / AO_Q[i].max) * 100);
+          return `<div class="q-row">
+            <div class="q-label">
+              <span>Q${i+1}. ${AO_Q[i].lbl}</span>
+              <span class="q-val">${pts}/${AO_Q[i].max}</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${barColor(pct)}"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+
+    </div>
+
+    <!-- Score table -->
+    <div class="table-wrap">
+      <div class="table-title">Détail des scores</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Score</th>
+            <th class="td-bar">Progression</th>
+            <th>Max</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${vQuestions.map((pts,i) => {
+            const pct = Math.round((pts/V_Q[i].max)*100);
+            return `<tr>
+              <td>V-Q${i+1}. ${V_Q[i].lbl}</td>
+              <td class="td-score" style="color:var(--blue)">${pts}</td>
+              <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${barColor(pct)}"></div></div></td>
+              <td style="color:#888">${V_Q[i].max}</td>
+            </tr>`;
+          }).join('')}
+          <tr class="total-row">
+            <td>Total Vulnérabilité</td>
+            <td class="td-score" style="color:var(--blue)">${vScore}</td>
+            <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${Math.round(vScore/50*100)}%;background:var(--blue)"></div></div></td>
+            <td style="color:#888">50</td>
+          </tr>
+          ${aoQuestions.map((pts,i) => {
+            const pct = Math.round((pts/AO_Q[i].max)*100);
+            return `<tr>
+              <td>AO-Q${i+1}. ${AO_Q[i].lbl}</td>
+              <td class="td-score" style="color:var(--teal)">${pts}</td>
+              <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${barColor(pct)}"></div></div></td>
+              <td style="color:#888">${AO_Q[i].max}</td>
+            </tr>`;
+          }).join('')}
+          <tr class="total-row">
+            <td>Total Opportunité</td>
+            <td class="td-score" style="color:var(--teal)">${aoScore}</td>
+            <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${Math.round(aoScore/30*100)}%;background:var(--teal)"></div></div></td>
+            <td style="color:#888">30</td>
+          </tr>
+          <tr class="total-row">
+            <td><strong>P = V × (A–O)</strong></td>
+            <td class="td-score" style="color:var(--ink)">${P}</td>
+            <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,Math.round(P/1500*100))}%;background:var(--ink)"></div></div></td>
+            <td style="color:#888">1500</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      Collerette, P., Lauzier, M., Schneider, R. — <em>Le pilotage du changement</em>, Presses de l'Université du Québec, 3e éd., 2021
+    </div>
+  `;
+
+}
+
+render();
+</script>
+</body>
+</html>
