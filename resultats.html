@@ -411,24 +411,7 @@ function textToAOScore(text, qi) {
   return AO_INV[qi] ? (6 - pos) : pos;
 }
 
-// ── CSV COLUMN NAMES ──────────────────────────────────────────────────────────
-const V_COLS = [
-  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 1. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes à la clientèle concernée? ]',
-  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 2. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes de fonctionnement au personnel concerné? ]',
-  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 3. Actuelle pourrait-elle se dégrader si le changement n\'est pas introduit maintenant? ]',
-  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 4. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes à vos partenaires ou à vos pairs? ]',
-  'Les indicateurs de vulnérabilité de l\'organisation (V)  [ 5. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes à vos supérieurs hiérarchiques? ]'
-];
-const AO_COLS = [
-  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 1. Votre organisation est-elle aux prises avec d\'autres problèmes/situations qui exigent du personnel plus d\'énergie qu\'à l\'habitude? ]',
-  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 2. Le temps et l\'énergie qui seraient consacrés à ce dossier pourraient-ils compromettre l\'évolution d\'autres dossiers prioritaires? ]',
-  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 3. Disposez-vous du temps requis pour prendre en charge la gestion et le suivi de ce dossier ou pour encadrer régulièrement les personnes qui vont s\'en charger? ]',
-  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 4. Le changement introduit épouse-t-il les orientations explicites de votre organisation? ]',
-  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 5. Le financement requis pour réaliser ce changement est-il disponible? ]',
-  'Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 6. Estimez-vous que les solutions envisagées seront plus efficaces que la formule en place actuellement? ]'
-];
-const V_SCORE_COL  = 'Page 2 : Les indicateurs de vulnérabilité de l\'organisation (V)  [ Score ]';
-const AO_SCORE_COL = 'Page 3 : Les indicateurs d\'opportunité du changement (A – O)  [ Score ]';
+// (Column names are now found dynamically in processRow via flexible matching)
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function gV(v)  { return v>=36?'36-50':v>=20?'20-35':'5-19'; }
@@ -440,10 +423,19 @@ function barColor(pct) {
   return 'var(--red)';
 }
 
-// ── CSV PARSER ────────────────────────────────────────────────────────────────
+// ── CSV PARSER (with character normalization) ─────────────────────────────────
+function norm(s) {
+  // Normalize curly quotes → straight, en/em dash → hyphen, strip accents
+  return s.replace(/[\u2018\u2019\u2032]/g, "'").replace(/[\u2013\u2014]/g, '-').trim();
+}
+function normSearch(s) {
+  // For searching: also strip accents
+  return norm(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 function parseCSV(text) {
   const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+  const headers = lines[0].split(',').map(h => norm(h.replace(/^"|"$/g, '')));
   return lines.slice(1).map(line => {
     const vals = []; let cur = '', inQ = false;
     for (let c of line) {
@@ -458,6 +450,18 @@ function parseCSV(text) {
   });
 }
 
+// ── GET VALUE BY PARTIAL KEY MATCH ────────────────────────────────────────────
+function getCol(row, searchKey) {
+  const nk = norm(searchKey);
+  // Try exact match first
+  if (row[nk] !== undefined) return row[nk];
+  // Partial match
+  for (const key of Object.keys(row)) {
+    if (key.includes(nk) || nk.includes(key)) return row[key];
+  }
+  return '';
+}
+
 // ── GET PARTICIPANT IDENTITY FROM URL ─────────────────────────────────────────
 function getIdentity() {
   const p = new URLSearchParams(window.location.search);
@@ -469,38 +473,56 @@ function getIdentity() {
 
 // ── FIND PARTICIPANT IN CSV ───────────────────────────────────────────────────
 function findParticipant(rows, prenom, nom) {
-  const normalize = s => s.toLowerCase().trim();
-  // Try exact match first
-  let match = rows.find(r =>
-    normalize(r['Prénom']) === normalize(prenom) &&
-    normalize(r['Nom']) === normalize(nom)
-  );
-  if (match) return match;
-  // Try partial match (prenom only)
-  if (prenom) {
-    match = rows.find(r => normalize(r['Prénom']) === normalize(prenom));
-    if (match) return match;
-  }
-  // Return last entry as fallback (most recent submission)
-  return rows.length ? rows[rows.length - 1] : null;
+  const nl = s => (s || '').toLowerCase().trim();
+  return rows.find(r => {
+    const keys = Object.keys(r);
+    const pk = keys.find(k => normSearch(k).includes('prenom')) || '';
+    const nk = keys.find(k => normSearch(k) === 'nom') || '';
+    return nl(r[pk]) === nl(prenom) && nl(r[nk]) === nl(nom);
+  }) || rows.find(r => {
+    const keys = Object.keys(r);
+    const pk = keys.find(k => normSearch(k).includes('prenom')) || '';
+    return prenom && nl(r[pk]) === nl(prenom);
+  }) || (rows.length ? rows[rows.length - 1] : null);
 }
 
 // ── PROCESS ROW → DATA OBJECT ─────────────────────────────────────────────────
 function processRow(row) {
-  const vScore  = parseFloat(row[V_SCORE_COL]) || 0;
-  const aoScore = parseFloat(row[AO_SCORE_COL]) || 0;
+  const keys = Object.keys(row);
 
-  // Individual question scores from text answers
-  const vQuestions  = V_COLS.map((col, i) => textToVScore(row[col], i));
-  const aoQuestions = AO_COLS.map((col, i) => textToAOScore(row[col], i));
+  // Page scores (pre-calculated by Zoho)
+  const vScoreCol = keys.find(k => normSearch(k).includes('page 2') && normSearch(k).includes('score') && !normSearch(k).includes('percentage')) || '';
+  const aoScoreCol = keys.find(k => normSearch(k).includes('page 3') && normSearch(k).includes('score') && !normSearch(k).includes('percentage')) || '';
+
+  const vScore  = parseFloat(row[vScoreCol]) || 0;
+  const aoScore = parseFloat(row[aoScoreCol]) || 0;
+
+  const vColPatterns = ['1. que vous souhaitez changer pose', '2. que vous souhaitez changer pose', '3. actuelle pourrait', '4. que vous souhaitez changer pose', '5. que vous souhaitez changer pose'];
+  const aoColPatterns = ['1. votre organisation est-elle aux prises', '2. le temps et', '3. disposez-vous du temps', '4. le changement introduit', '5. le financement requis', '6. estimez-vous que les solutions'];
+
+  const vAnswerCols = vColPatterns.map(pat =>
+    keys.find(k => normSearch(k).includes(pat) && normSearch(k).includes('vulnerabilite')) ||
+    keys.find(k => normSearch(k).includes(pat)) || ''
+  );
+  const aoAnswerCols = aoColPatterns.map(pat =>
+    keys.find(k => normSearch(k).includes(pat) && normSearch(k).includes('selectionnez')) ||
+    keys.find(k => normSearch(k).includes(pat)) || ''
+  );
+
+  const vQuestions  = vAnswerCols.map((col, i) => textToVScore(row[col] || '', i));
+  const aoQuestions = aoAnswerCols.map((col, i) => textToAOScore(row[col] || '', i));
+
+  const prenomKey = keys.find(k => normSearch(k).includes('prenom')) || '';
+  const nomKey = keys.find(k => normSearch(k) === 'nom') || '';
+  const findKeyBy = (search) => keys.find(k => normSearch(k).includes(normSearch(search))) || '';
 
   return {
-    name:    [row['Prénom'], row['Nom']].filter(Boolean).join(' ') || 'Participant',
-    email:   row['E-mail'] || '',
-    dept:    row['Département'] || '',
-    pos:     row['Poste'] || '',
-    company: row['Pharmacie'] || '',
-    date:    row['Date du workshop'] || '',
+    name:    [row[prenomKey], row[nomKey]].filter(Boolean).join(' ') || 'Participant',
+    email:   row[findKeyBy('e-mail')] || row[findKeyBy('email')] || '',
+    dept:    row[findKeyBy('departement')] || '',
+    pos:     row[findKeyBy('poste')] || '',
+    company: row[findKeyBy('pharmacie')] || '',
+    date:    row[findKeyBy('date du workshop')] || '',
     vScore, aoScore,
     P: Math.round(vScore * aoScore),
     vQuestions, aoQuestions,
@@ -764,7 +786,11 @@ async function loadResults(attempt) {
   try {
     const res = await fetch(CSV_URL);
     const text = await res.text();
-    const rows = parseCSV(text).filter(r => r['Prénom'] || r['Nom']);
+    const rows = parseCSV(text).filter(r => {
+      return Object.entries(r).some(([k, v]) => {
+        return (normSearch(k).includes('prenom') || normSearch(k) === 'nom') && v.trim();
+      });
+    });
     const row = findParticipant(rows, prenom, nom);
 
     if (!row) {

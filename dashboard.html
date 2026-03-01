@@ -378,7 +378,7 @@ function getAORange(ao) { return ao >= 23 ? '23-30' : ao >= 14 ? '14-22' : '6-13
 
 function parseCSV(text) {
   const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+  const headers = lines[0].split(',').map(h => norm(h.replace(/^"|"$/g, '')));
   return lines.slice(1).map(line => {
     const vals = []; let cur = '', inQ = false;
     for (let c of line) {
@@ -393,41 +393,57 @@ function parseCSV(text) {
   });
 }
 
+// Normalize curly quotes and en dashes
+function norm(s) {
+  return s.replace(/[\u2018\u2019\u2032]/g, "'").replace(/[\u2013\u2014]/g, '-').trim();
+}
+function normSearch(s) {
+  return norm(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 function processRow(row) {
-  const vScore = parseFloat(row['Page 2 : Les indicateurs de vulnérabilité de l\'organisation (V)  [ Score ]']) || 0;
-  const aoScore = parseFloat(row['Page 3 : Les indicateurs d\'opportunité du changement (A – O)  [ Score ]']) || 0;
+  const keys = Object.keys(row);
+  const findKeyBy = (search) => keys.find(k => normSearch(k).includes(normSearch(search))) || '';
+
+  const vScoreCol = keys.find(k => normSearch(k).includes('page 2') && normSearch(k).includes('score') && !normSearch(k).includes('percentage')) || '';
+  const aoScoreCol = keys.find(k => normSearch(k).includes('page 3') && normSearch(k).includes('score') && !normSearch(k).includes('percentage')) || '';
+
+  const vScore = parseFloat(row[vScoreCol]) || 0;
+  const aoScore = parseFloat(row[aoScoreCol]) || 0;
   const P = Math.round(vScore * aoScore);
   const vRange = getVRange(vScore);
   const aoRange = getAORange(aoScore);
   const pot = MATRIX_DEF[aoRange][vRange];
+
+  const prenomKey = keys.find(k => normSearch(k).includes('prenom')) || '';
+  const nomKey = keys.find(k => normSearch(k) === 'nom') || '';
+
+  const vPatterns = ['1. que vous', '2. que vous', '3. actuelle', '4. que vous', '5. que vous'];
+  const vAnswerCols = vPatterns.map(pat =>
+    keys.find(k => normSearch(k).includes(pat) && normSearch(k).includes('vulnerabilite')) ||
+    keys.find(k => normSearch(k).includes(pat)) || ''
+  );
+
+  const aoPatterns = ['1. votre organisation', '2. le temps', '3. disposez-vous', '4. le changement', '5. le financement', '6. estimez-vous'];
+  const aoAnswerCols = aoPatterns.map(pat =>
+    keys.find(k => normSearch(k).includes(pat) && normSearch(k).includes('selectionnez')) ||
+    keys.find(k => normSearch(k).includes(pat)) || ''
+  );
+
   return {
-    prenom: row['Prénom'] || '',
-    nom: row['Nom'] || '',
-    dept: row['Département'] || '',
-    poste: row['Poste'] || '',
-    pharmacie: row['Pharmacie'] || '',
-    date: row['Date du workshop'] || '',
+    prenom: row[prenomKey] || '',
+    nom: row[nomKey] || '',
+    dept: row[findKeyBy('departement')] || '',
+    poste: row[findKeyBy('poste')] || '',
+    pharmacie: row[findKeyBy('pharmacie')] || '',
+    date: row[findKeyBy('date du workshop')] || '',
     vScore, aoScore, P,
     vRange, aoRange,
     potential: pot.level,
     potColor: pot.color,
     potRank: pot.rank,
-    // Q details
-    vAnswers: [
-      row['Les indicateurs de vulnérabilité de l\'organisation (V)  [ 1. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes à la clientèle concernée? ]'],
-      row['Les indicateurs de vulnérabilité de l\'organisation (V)  [ 2. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes de fonctionnement au personnel concerné? ]'],
-      row['Les indicateurs de vulnérabilité de l\'organisation (V)  [ 3. Actuelle pourrait-elle se dégrader si le changement n\'est pas introduit maintenant? ]'],
-      row['Les indicateurs de vulnérabilité de l\'organisation (V)  [ 4. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes à vos partenaires ou à vos pairs? ]'],
-      row['Les indicateurs de vulnérabilité de l\'organisation (V)  [ 5. Que vous souhaitez changer pose-t-elle (ou posera-t-elle) des problèmes à vos supérieurs hiérarchiques? ]']
-    ],
-    aoAnswers: [
-      row['Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 1. Votre organisation est-elle aux prises avec d\'autres problèmes/situations qui exigent du personnel plus d\'énergie qu\'à l\'habitude? ]'],
-      row['Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 2. Le temps et l\'énergie qui seraient consacrés à ce dossier pourraient-ils compromettre l\'évolution d\'autres dossiers prioritaires? ]'],
-      row['Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 3. Disposez-vous du temps requis pour prendre en charge la gestion et le suivi de ce dossier ou pour encadrer régulièrement les personnes qui vont s\'en charger? ]'],
-      row['Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 4. Le changement introduit épouse-t-il les orientations explicites de votre organisation? ]'],
-      row['Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 5. Le financement requis pour réaliser ce changement est-il disponible? ]'],
-      row['Sélectionnez le chiffre correspondant à votre situation pour chacun des énoncés ci-dessous  [ 6. Estimez-vous que les solutions envisagées seront plus efficaces que la formule en place actuellement? ]']
-    ]
+    vAnswers: vAnswerCols.map(col => row[col] || ''),
+    aoAnswers: aoAnswerCols.map(col => row[col] || '')
   };
 }
 
@@ -661,7 +677,11 @@ async function loadAndRender() {
   try {
     const res = await fetch(CSV_URL);
     const text = await res.text();
-    const raw = parseCSV(text).filter(r => r['Prénom'] || r['Nom']);
+    const raw = parseCSV(text).filter(r => {
+      return Object.entries(r).some(([k, v]) => {
+        return (normSearch(k).includes('prenom') || normSearch(k) === 'nom') && v.trim();
+      });
+    });
     allData = raw.map(processRow);
     filtered = [...allData];
     populateFilters(allData);
