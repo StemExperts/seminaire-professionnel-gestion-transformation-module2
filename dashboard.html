@@ -386,7 +386,9 @@ async function loadData() {
   }
 
   if (text) {
-    const rows = parseCSV(text);
+    const rows = parseCSV(text).filter(r =>
+      Object.keys(r).some(k => normSearch(k).includes('prenom') && (r[k]||'').trim())
+    );
     if (rows.length) {
       allRows = rows.map(processRow);
       document.getElementById('loadingState').style.display = 'none';
