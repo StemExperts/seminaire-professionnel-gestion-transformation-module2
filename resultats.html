@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Résultats – La Pertinence du Changement</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
   --ink:         #002169;
@@ -110,6 +111,80 @@ body::before {
 }
 .sc-denom { font-size: 14px; color: #777; margin-left: 2px; }
 .sc-sub { font-size: 12px; color: #888; margin-top: 4px; }
+
+
+/* ── Geometric mean and comparison charts ─────────────────── */
+.gm-card {
+  background: var(--ink);
+  border-radius: 16px; padding: 28px 24px;
+  box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; gap: 24px;
+  margin-bottom: 20px;
+  animation: fadeUp .65s .14s ease both;
+}
+@media(max-width:620px){ .gm-card { flex-direction: column; text-align: center; } }
+
+.gm-icon {
+  flex-shrink: 0; width: 58px; height: 58px; border-radius: 50%;
+  background: rgba(255,237,0,.12);
+  border: 1.5px solid rgba(255,237,0,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: var(--gold-light);
+}
+.gm-text h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px; color: var(--white); margin-bottom: 5px;
+}
+.gm-text p {
+  font-size: 12px; color: rgba(255,255,255,.74);
+  line-height: 1.55; max-width: 420px;
+}
+.gm-scores { margin-left: auto; flex-shrink: 0; display: flex; gap: 24px; }
+@media(max-width:620px){ .gm-scores { margin-left: 0; } }
+.gm-score-block { text-align: center; }
+.gm-score-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px; font-weight: 700; color: var(--gold-light); line-height: 1;
+}
+.gm-score-lbl {
+  font-size: 9px; letter-spacing: .13em; text-transform: uppercase;
+  color: rgba(255,255,255,.55); margin-top: 4px;
+}
+.gm-divider { width: 1px; background: rgba(255,255,255,.12); align-self: stretch; }
+
+.gm-chart-card {
+  background: var(--white); border-radius: 16px; padding: 28px 24px;
+  box-shadow: var(--shadow); margin-bottom: 24px;
+  animation: fadeUp .65s .16s ease both;
+}
+.gm-chart-title {
+  font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 4px;
+}
+.gm-chart-sub { font-size: 12px; color: var(--ink-soft); margin-bottom: 24px; }
+.gm-chart-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; }
+@media(max-width:700px){ .gm-chart-grid { grid-template-columns: 1fr; } }
+.gm-chart-label {
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600; color: var(--ink-soft); text-align: center; margin-bottom: 10px;
+}
+.gm-legend { display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:12px; font-size:11px; color:#4a5a8a; }
+.gm-legend-group { display:flex; align-items:center; gap:6px; }
+.gm-legend-swatch { display:inline-block; width:12px; height:12px; border-radius:3px; }
+.gm-donut-stack { display:flex; flex-direction:column; gap:20px; align-items:center; }
+.gm-donut-wrap { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.gm-donut-rel { position:relative; width:150px; height:150px; }
+.gm-donut-center {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  text-align:center; pointer-events:none;
+}
+.gm-donut-center .big {
+  font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; line-height:1;
+}
+.gm-donut-center .sm { font-size:11px; color: var(--ink-soft); }
+.gm-donut-block-lbl {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  font-weight: 600; color: var(--ink-soft); text-align: center; margin-top: 4px;
+}
 
 /* ── Potential block ──────────────────────────────────────── */
 .potential-wrap {
@@ -360,7 +435,13 @@ tr:last-child td { border-bottom: none; }
 
 <script>
 // ── CSV URL (same as dashboard) ───────────────────────────────────────────────
-const CSV_URL = 'https://corsproxy.io/?url=' + encodeURIComponent('https://sheet.zohopublic.com/sheet/published/k9dlp18691e0ce0944a07af1f2ae69379be4c?download=csv&sheetname=Feuille1');
+const BASE_ZOHO_URL = 'https://sheet.zohopublic.com/sheet/published/k9dlp18691e0ce0944a07af1f2ae69379be4c?download=csv&sheetname=Feuille1';
+const CSV_SOURCES = [
+  url => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+  url => 'https://thingproxy.freeboard.io/fetch/' + url
+];
 
 // ── MATRIX DATA ────────────────────────────────────────────────────────────────
 const MX = {
@@ -423,6 +504,152 @@ function barColor(pct) {
   return 'var(--red)';
 }
 
+function round1(n) {
+  return Math.round(Number(n || 0) * 10) / 10;
+}
+
+function geometricMeanPercent(scores, maxima) {
+  const parts = scores.map((score, i) => {
+    const max = Number(maxima[i] || 0);
+    if (!max) return 0.01;
+    const ratio = Number(score || 0) / max;
+    return Math.max(0.01, ratio);
+  });
+  const product = parts.reduce((acc, val) => acc * val, 1);
+  return round1(Math.pow(product, 1 / parts.length) * 100);
+}
+
+function buildComparisonMetrics(d) {
+  const vMaxes = V_Q.map(q => q.max);
+  const aoMaxes = AO_Q.map(q => q.max);
+  const arithmeticV = round1((d.vScore / 50) * 100);
+  const arithmeticAO = round1((d.aoScore / 30) * 100);
+  const arithmeticGlobal = round1(((d.vScore + d.aoScore) / 80) * 100);
+  const geoV = geometricMeanPercent(d.vQuestions, vMaxes);
+  const geoAO = geometricMeanPercent(d.aoQuestions, aoMaxes);
+  const geoGlobal = geometricMeanPercent([...d.vQuestions, ...d.aoQuestions], [...vMaxes, ...aoMaxes]);
+
+  return {
+    arithmeticV,
+    arithmeticAO,
+    arithmeticGlobal,
+    geoV,
+    geoAO,
+    geoGlobal,
+  };
+}
+
+function renderComparisonCharts(metrics) {
+  if (typeof Chart === 'undefined') return;
+
+  const barCanvas = document.getElementById('gmBarChart');
+  const donutCanvas = document.getElementById('gmDonutChart');
+  const donutGeoCanvas = document.getElementById('gmDonutGeoChart');
+  if (!barCanvas || !donutCanvas || !donutGeoCanvas) return;
+
+  const barCtx = barCanvas.getContext('2d');
+  new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Vulnérabilité', 'Opportunité', 'Global'],
+      datasets: [
+        {
+          label: 'Arithmétique',
+          data: [metrics.arithmeticV, metrics.arithmeticAO, metrics.arithmeticGlobal],
+          backgroundColor: ['rgba(29,113,184,0.88)', 'rgba(0,144,172,0.88)', 'rgba(0,33,105,0.88)'],
+          borderRadius: 5,
+          borderSkipped: false,
+        },
+        {
+          label: 'Géométrique',
+          data: [metrics.geoV, metrics.geoAO, metrics.geoGlobal],
+          backgroundColor: ['rgba(29,113,184,0.38)', 'rgba(0,144,172,0.38)', 'rgba(0,33,105,0.38)'],
+          borderRadius: 5,
+          borderSkipped: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw}%` } }
+      },
+      scales: {
+        y: {
+          min: 0, max: 115,
+          ticks: {
+            callback: v => v <= 100 ? v + '%' : '',
+            font: { family: 'DM Sans', size: 10 },
+            color: '#3d3d5c'
+          },
+          grid: { color: 'rgba(0,0,0,0.05)' }
+        },
+        x: {
+          ticks: { font: { family: 'DM Sans', size: 10 }, color: '#3d3d5c' },
+          grid: { display: false }
+        }
+      },
+      animation: {
+        onComplete: function() {
+          const chart = this;
+          const ctx = chart.ctx;
+          ctx.font = 'bold 10px DM Sans';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          chart.data.datasets.forEach((dataset, di) => {
+            const meta = chart.getDatasetMeta(di);
+            meta.data.forEach((bar, i) => {
+              const val = dataset.data[i];
+              if (val == null) return;
+              ctx.fillStyle = di === 0 ? '#002169' : '#4a5a8a';
+              ctx.fillText(val + '%', bar.x, bar.y - 4);
+            });
+          });
+        }
+      }
+    }
+  });
+
+  document.getElementById('gmDonutNum').textContent = metrics.arithmeticGlobal;
+  const donutCtx = donutCanvas.getContext('2d');
+  new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [metrics.arithmeticGlobal, 100 - metrics.arithmeticGlobal],
+        backgroundColor: ['rgba(29,113,184,0.88)', 'rgba(232,236,242,0.7)'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: false,
+      cutout: '72%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      animation: { animateRotate: true, duration: 1200, easing: 'easeOutQuart' }
+    }
+  });
+
+  document.getElementById('gmDonutGeoNum').textContent = metrics.geoGlobal;
+  const donutGeoCtx = donutGeoCanvas.getContext('2d');
+  new Chart(donutGeoCtx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [metrics.geoGlobal, 100 - metrics.geoGlobal],
+        backgroundColor: ['rgba(0,144,172,0.88)', 'rgba(232,236,242,0.7)'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: false,
+      cutout: '72%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      animation: { animateRotate: true, duration: 1400, easing: 'easeOutQuart' }
+    }
+  });
+}
+
 // ── CSV PARSER (with character normalization) ─────────────────────────────────
 function norm(s) {
   // Normalize curly quotes → straight, en/em dash → hyphen, strip accents
@@ -465,25 +692,88 @@ function getCol(row, searchKey) {
 // ── GET PARTICIPANT IDENTITY FROM URL ─────────────────────────────────────────
 function getIdentity() {
   const p = new URLSearchParams(window.location.search);
+  const pick = (...keys) => {
+    for (const key of keys) {
+      const val = p.get(key);
+      if (val && val.trim()) return val.trim();
+    }
+    return '';
+  };
   return {
-    prenom: p.get('prenom') || p.get('Prénom') || '',
-    nom:    p.get('nom')    || p.get('Nom')    || '',
+    prenom: pick('prenom', 'Prénom', 'first_name', 'firstname'),
+    nom: pick('nom', 'Nom', 'last_name', 'lastname'),
+    responseId: pick('responseId', 'responseid', 'response_id', 'rid', 'ID de la réponse'),
+    dateAtelier: pick('date', "Date de l'atelier", 'date_atelier', 'dateAtelier')
   };
 }
 
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function looksLikeValidCSV(text) {
+  if (!text || text.length < 80) return false;
+  const head = text.slice(0, 600).toLowerCase();
+  if (head.includes('<html') || head.includes('<!doctype')) return false;
+  return head.includes('prénom') || head.includes('prenom');
+}
+
+async function loadCSVText() {
+  const bustUrl = BASE_ZOHO_URL + '&_t=' + Date.now();
+  let lastError = null;
+
+  for (const source of CSV_SOURCES) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(source(bustUrl), { cache: 'no-store', signal: controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (looksLikeValidCSV(text)) return text;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+
+  throw lastError || new Error('Impossible de télécharger un CSV valide');
+}
+
 // ── FIND PARTICIPANT IN CSV ───────────────────────────────────────────────────
-function findParticipant(rows, prenom, nom) {
-  const nl = s => (s || '').toLowerCase().trim();
-  return rows.find(r => {
-    const keys = Object.keys(r);
-    const pk = keys.find(k => normSearch(k).includes('prenom')) || '';
-    const nk = keys.find(k => normSearch(k) === 'nom') || '';
-    return nl(r[pk]) === nl(prenom) && nl(r[nk]) === nl(nom);
-  }) || rows.find(r => {
-    const keys = Object.keys(r);
-    const pk = keys.find(k => normSearch(k).includes('prenom')) || '';
-    return prenom && nl(r[pk]) === nl(prenom);
-  }) || (rows.length ? rows[rows.length - 1] : null);
+function findParticipant(rows, identity) {
+  const nl = s => normSearch(String(s || ''));
+  const responseId = nl(identity.responseId);
+  const prenom = nl(identity.prenom);
+  const nom = nl(identity.nom);
+
+  const extract = row => {
+    const keys = Object.keys(row);
+    return {
+      prenom: row[keys.find(k => normSearch(k).includes('prenom')) || ''] || '',
+      nom: row[keys.find(k => normSearch(k) === 'nom') || ''] || '',
+      responseId: row[keys.find(k => normSearch(k).includes('id de la reponse')) || ''] || ''
+    };
+  };
+
+  if (responseId) {
+    const exactById = rows.find(r => nl(extract(r).responseId) === responseId);
+    if (exactById) return exactById;
+  }
+
+  if (prenom && nom) {
+    const exactByName = rows.find(r => {
+      const e = extract(r);
+      return nl(e.prenom) === prenom && nl(e.nom) === nom;
+    });
+    if (exactByName) return exactByName;
+  }
+
+  if (prenom && !nom) {
+    const firstNameMatches = rows.filter(r => nl(extract(r).prenom) === prenom);
+    if (firstNameMatches.length === 1) return firstNameMatches[0];
+  }
+
+  return null;
 }
 
 // ── PROCESS ROW → DATA OBJECT ─────────────────────────────────────────────────
@@ -517,12 +807,15 @@ function processRow(row) {
   const findKeyBy = (search) => keys.find(k => normSearch(k).includes(normSearch(search))) || '';
 
   return {
+    prenom:  row[prenomKey] || '',
+    nom:     row[nomKey] || '',
     name:    [row[prenomKey], row[nomKey]].filter(Boolean).join(' ') || 'Participant',
     email:   row[findKeyBy('e-mail')] || row[findKeyBy('email')] || '',
     dept:    row[findKeyBy('departement')] || '',
     pos:     row[findKeyBy('poste')] || '',
     company: row[findKeyBy('pharmacie')] || '',
-    date:    row[findKeyBy('date du workshop')] || '',
+    date:    row[findKeyBy("date de l'atelier")] || row[findKeyBy('date du workshop')] || '',
+    responseId: row[findKeyBy('id de la reponse')] || '',
     vScore, aoScore,
     P: Math.round(vScore * aoScore),
     vQuestions, aoQuestions,
@@ -601,7 +894,9 @@ function renderResults(d) {
   const vR  = gV(vScore);
   const aoR = gAO(aoScore);
   const pot = MX[aoR][vR];
-  const meta = [d.pos, d.dept, d.company, d.date].filter(Boolean).join(' · ');
+  const safeName = escapeHtml(name);
+  const meta = [d.pos, d.dept, d.company, d.date].filter(Boolean).map(escapeHtml).join(' · ');
+  const metrics = buildComparisonMetrics(d);
 
   document.getElementById('page').innerHTML = `
 
@@ -609,7 +904,7 @@ function renderResults(d) {
     <div class="header">
       <span class="eyebrow">Formation Pratique en Gestion · Module 2</span>
       <h1>La pertinence du changement</h1>
-      <p class="participant-line"><strong>${name}</strong>${meta ? ` · <span style="color:#777">${meta}</span>` : ''}</p>
+      <p class="participant-line"><strong>${safeName}</strong>${meta ? ` · <span style="color:#777">${meta}</span>` : ''}</p>
       <div class="divider"></div>
     </div>
 
@@ -629,6 +924,86 @@ function renderResults(d) {
         <div class="sc-label">P = V × (A–O)</div>
         <div class="sc-score">${P}<span class="sc-denom"> / 1500</span></div>
         <div class="sc-sub">Potentiel de changement</div>
+      </div>
+    </div>
+
+    <!-- Geometric mean -->
+    <div class="gm-card">
+      <div class="gm-icon">⬡</div>
+      <div class="gm-text">
+        <h3>Moyenne géométrique</h3>
+        <p>Contrairement à la moyenne arithmétique, la moyenne géométrique amplifie l'impact de vos scores les plus faibles. Elle permet de comparer vos sections sur une base commune en pourcentage et met davantage en évidence les éléments qui freinent votre potentiel global.</p>
+      </div>
+      <div class="gm-scores">
+        <div class="gm-score-block">
+          <div class="gm-score-num">${metrics.geoV} %</div>
+          <div class="gm-score-lbl">Vulnérabilité %</div>
+        </div>
+        <div class="gm-divider"></div>
+        <div class="gm-score-block">
+          <div class="gm-score-num">${metrics.geoAO} %</div>
+          <div class="gm-score-lbl">Opportunité %</div>
+        </div>
+        <div class="gm-divider"></div>
+        <div class="gm-score-block">
+          <div class="gm-score-num">${metrics.geoGlobal} %</div>
+          <div class="gm-score-lbl">Global %</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arithmetic vs geometric comparison -->
+    <div class="gm-chart-card">
+      <div class="gm-chart-title">Comparatif arithmétique et géométrique</div>
+      <div class="gm-chart-sub">Les pourcentages ci-dessous comparent vos résultats normalisés par section.</div>
+      <div class="gm-chart-grid">
+        <div>
+          <div class="gm-chart-label">Scores par section</div>
+          <canvas id="gmBarChart"></canvas>
+          <div class="gm-legend">
+            <div class="gm-legend-group">
+              <strong style="color:#002169;">Arithmétique</strong>
+              <span class="gm-legend-swatch" style="background:rgba(29,113,184,0.88)"></span>
+              <span class="gm-legend-swatch" style="background:rgba(0,144,172,0.88)"></span>
+              <span class="gm-legend-swatch" style="background:rgba(0,33,105,0.88)"></span>
+            </div>
+            <div class="gm-legend-group">
+              <strong style="color:#002169;">Géométrique</strong>
+              <span class="gm-legend-swatch" style="background:rgba(29,113,184,0.38)"></span>
+              <span class="gm-legend-swatch" style="background:rgba(0,144,172,0.38)"></span>
+              <span class="gm-legend-swatch" style="background:rgba(0,33,105,0.38)"></span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="gm-donut-stack">
+            <div>
+              <div class="gm-chart-label">Score global</div>
+              <div class="gm-donut-wrap">
+                <div class="gm-donut-rel">
+                  <canvas id="gmDonutChart" width="150" height="150"></canvas>
+                  <div class="gm-donut-center">
+                    <span class="big" id="gmDonutNum" style="color:var(--blue)">–</span>
+                    <span class="sm">%</span>
+                  </div>
+                </div>
+                <div class="gm-donut-block-lbl">Arithmétique</div>
+              </div>
+            </div>
+            <div>
+              <div class="gm-donut-wrap">
+                <div class="gm-donut-rel">
+                  <canvas id="gmDonutGeoChart" width="150" height="150"></canvas>
+                  <div class="gm-donut-center">
+                    <span class="big" id="gmDonutGeoNum" style="color:var(--teal)">–</span>
+                    <span class="sm">%</span>
+                  </div>
+                </div>
+                <div class="gm-donut-block-lbl" style="color:var(--teal)">Géométrique</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -769,14 +1144,16 @@ function renderResults(d) {
       Collerette, P., Lauzier, M., Schneider, R. — <em>Le pilotage du changement</em>, Presses de l'Université du Québec, 3e éd., 2021
     </div>
   `;
+
+  renderComparisonCharts(metrics);
 }
 
 // ── MAIN LOAD FUNCTION (with retry for Zoho sync delay) ───────────────────────
 async function loadResults(attempt) {
   attempt = attempt || 1;
-  const { prenom, nom } = getIdentity();
+  const identity = getIdentity();
 
-  if (!prenom && !nom) {
+  if (!identity.prenom && !identity.nom && !identity.responseId) {
     showError('Aucun participant identifié');
     return;
   }
@@ -784,17 +1161,16 @@ async function loadResults(attempt) {
   showLoading();
 
   try {
-    const res = await fetch(CSV_URL);
-    const text = await res.text();
+    const text = await loadCSVText();
     const rows = parseCSV(text).filter(r => {
       return Object.entries(r).some(([k, v]) => {
-        return (normSearch(k).includes('prenom') || normSearch(k) === 'nom') && v.trim();
+        return (normSearch(k).includes('prenom') || normSearch(k) === 'nom') && String(v || '').trim();
       });
     });
-    const row = findParticipant(rows, prenom, nom);
+
+    const row = findParticipant(rows, identity);
 
     if (!row) {
-      // Retry up to 3 times with 4s delay (Zoho Sheet sync can be slow)
       if (attempt < 3) {
         setTimeout(() => loadResults(attempt + 1), 4000);
         return;
@@ -804,6 +1180,7 @@ async function loadResults(attempt) {
     }
 
     const d = processRow(row);
+    if (identity.dateAtelier) d.date = identity.dateAtelier;
     renderResults(d);
 
   } catch(e) {
