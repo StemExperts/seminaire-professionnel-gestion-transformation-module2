@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root{--ink:#002169;--ink-soft:#1d71b8;--cream:#f5f7fa;--cream-dark:#e8ecf2;--gold:#ffed00;--blue:#1d71b8;--blue-light:#d0e4f5;--green:#95c11f;--green-light:#e8f5c0;--teal:#0090ac;--teal-light:#d0eef3;--white:#ffffff;--shadow:0 4px 28px rgba(0,33,105,0.10);--shadow-lg:0 10px 48px rgba(0,33,105,0.18);--eleve:#1a7a4a;--assez-eleve:#2d9f5e;--modere:#e8a020;--faible:#c0392b;--tres-faible:#922b21;--navy:#002169;}
+:root{--ink:#002169;--ink-soft:#1d71b8;--cream:#f5f7fa;--cream-dark:#e8ecf2;--gold:#ffed00;--blue:#1d71b8;--blue-light:#d0e4f5;--green:#95c11f;--green-light:#e8f5c0;--teal:#0090ac;--teal-light:#d0eef3;--white:#ffffff;--shadow:0 4px 28px rgba(0,33,105,0.10);--shadow-lg:0 10px 48px rgba(0,33,105,0.18);--eleve:#95c11f;--assez-eleve:#95c11f;--modere:#ffed00;--faible:#922b21;--tres-faible:#922b21;--navy:#002169;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--cream);font-family:"DM Sans",sans-serif;color:var(--ink);min-height:100vh;}
 .topbar{background:var(--ink);color:var(--white);padding:14px 28px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3);overflow:hidden;}
@@ -142,7 +142,7 @@ tr:last-child td{border-bottom:none;}
       <div class="kpi k1"><div class="kpi-label">Participants</div><div class="kpi-val" id="kpiTotal">—</div></div>
       <div class="kpi k2"><div class="kpi-label">Moy. Vulnérabilité /50</div><div class="kpi-val" id="kpiV">—</div></div>
       <div class="kpi k3"><div class="kpi-label">Moy. Opportunité /30</div><div class="kpi-val" id="kpiAO">—</div></div>
-      <div class="kpi k4"><div class="kpi-label">Moy. P = V×(A–O)</div><div class="kpi-val" id="kpiP">—</div></div>
+
     </div>
 
     <div class="card">
@@ -152,39 +152,17 @@ tr:last-child td{border-bottom:none;}
       <div class="legend" style="margin-top:16px;">
         <div class="legend-item"><div class="legend-dot" style="background:var(--eleve)"></div>Élevé</div>
         <div class="legend-item"><div class="legend-dot" style="background:var(--assez-eleve)"></div>Assez élevé</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--modere)"></div>Modéré</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--modere);border:1px solid #ccc"></div>Modéré</div>
         <div class="legend-item"><div class="legend-dot" style="background:var(--faible)"></div>Faible</div>
         <div class="legend-item"><div class="legend-dot" style="background:var(--tres-faible)"></div>Très faible</div>
       </div>
     </div>
 
-    <div class="radar-card">
-      <div class="radar-title">
-        <span class="radar-dot" style="background:var(--blue);"></span>
-        Profil radar du groupe | 11 indicateurs
-      </div>
-      <canvas id="radarGroupChart" style="max-height:500px;width:100%;"></canvas>
-      <div class="zone-legend-dash" style="margin-top:14px;flex-wrap:wrap;gap:14px;">
-        <div class="zone-dot-dash"><span style="background:var(--blue);border-radius:2px;width:18px;height:4px;"></span> Vulnérabilité (V)</div>
-        <div class="zone-dot-dash"><span style="background:#95c11f;border-radius:2px;width:18px;height:4px;"></span> Opportunité (A–O)</div>
-        <div style="width:1px;height:14px;background:#ddd;"></div>
-        <div class="zone-dot-dash"><span style="background:rgba(149,193,31,0.7);border-radius:50%;width:10px;height:10px;"></span> Élevé (&gt; 3.5 / 5)</div>
-        <div class="zone-dot-dash"><span style="background:rgba(255,237,0,0.85);border-radius:50%;width:10px;height:10px;"></span> Moyen (2 – 3.5 / 5)</div>
-        <div class="zone-dot-dash"><span style="background:rgba(220,38,38,0.7);border-radius:50%;width:10px;height:10px;"></span> Faible (&lt; 2 / 5)</div>
-      </div>
-      <div id="radarGeoBadge" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--cream-dark);"></div>
-    </div>
 
-    <!-- ── Section Comparatif Arith vs Géo ── -->
-    <div class="section-header"><h2>Arithmétique vs Géométrique par Dimension</h2><p>La différence révèle l'impact des scores les plus bas sur la moyenne géométrique</p></div>
-    <div class="card"><div id="compareDims"></div></div>
 
-    <!-- ── Distribution de P géométrique ── -->
-    <div class="section-header"><h2>Distribution du Potentiel (P)</h2><p>Répartition en % géométrique · score P = V × (A–O) normalisé sur 100</p></div>
-    <div class="card">
-      <div class="card-sub">Chaque participant est placé selon son score P géométrique (% sur 1 500)</div>
-      <canvas id="distPChart" height="110"></canvas>
-    </div>
+
+
+
 
 
     <div class="grid-2">

@@ -65,7 +65,7 @@ body::before {
   line-height: 1.2; margin-bottom: 10px;
 }
 .participant-line {
-  font-size: 14px; color: var(--ink-soft);
+  font-size: 21px; color: var(--ink-soft);
   margin-top: 6px;
 }
 .participant-line strong { color: var(--blue); font-weight: 600; }
@@ -78,9 +78,10 @@ body::before {
 /* ── Summary cards ────────────────────────────────────────── */
 .summary-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 320px));
   gap: 14px; margin-bottom: 24px;
   animation: fadeUp .65s .1s ease both;
+  justify-content: center;
 }
 @media(max-width:600px){ .summary-row { grid-template-columns: 1fr; } }
 
@@ -296,10 +297,10 @@ body::before {
 }
 .mc .mc-star { font-size: 16px; }
 .mc .mc-name { font-size: 11px; font-weight: 700; line-height: 1.3; }
-.c-el  { background: #1a7a4a; }
-.c-ae  { background: #2d9f5e; }
-.c-mo  { background: #e8a020; }
-.c-fa  { background: #c0392b; }
+.c-el  { background: #95c11f; }
+.c-ae  { background: #95c11f; }
+.c-mo  { background: #ffed00; }
+.c-fa  { background: #922b21; }
 .c-tf  { background: #922b21; }
 
 /* Matrix legend */
@@ -920,92 +921,11 @@ function renderResults(d) {
         <div class="sc-score">${aoScore}<span class="sc-denom"> / 30</span></div>
         <div class="sc-sub">Indicateurs d'opportunité</div>
       </div>
-      <div class="summary-card p-card">
-        <div class="sc-label">P = V × (A–O)</div>
-        <div class="sc-score">${P}<span class="sc-denom"> / 1500</span></div>
-        <div class="sc-sub">Potentiel de changement</div>
-      </div>
+
     </div>
 
-    <!-- Geometric mean -->
-    <div class="gm-card">
-      <div class="gm-icon">⬡</div>
-      <div class="gm-text">
-        <h3>Moyenne géométrique</h3>
-        <p>Contrairement à la moyenne arithmétique, la moyenne géométrique amplifie l'impact de vos scores les plus faibles. Elle permet de comparer vos sections sur une base commune en pourcentage et met davantage en évidence les éléments qui freinent votre potentiel global.</p>
-      </div>
-      <div class="gm-scores">
-        <div class="gm-score-block">
-          <div class="gm-score-num">${metrics.geoV} %</div>
-          <div class="gm-score-lbl">Vulnérabilité %</div>
-        </div>
-        <div class="gm-divider"></div>
-        <div class="gm-score-block">
-          <div class="gm-score-num">${metrics.geoAO} %</div>
-          <div class="gm-score-lbl">Opportunité %</div>
-        </div>
-        <div class="gm-divider"></div>
-        <div class="gm-score-block">
-          <div class="gm-score-num">${metrics.geoGlobal} %</div>
-          <div class="gm-score-lbl">Global %</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Arithmetic vs geometric comparison -->
-    <div class="gm-chart-card">
-      <div class="gm-chart-title">Comparatif arithmétique et géométrique</div>
-      <div class="gm-chart-sub">Les pourcentages ci-dessous comparent vos résultats normalisés par section.</div>
-      <div class="gm-chart-grid">
-        <div>
-          <div class="gm-chart-label">Scores par section</div>
-          <canvas id="gmBarChart"></canvas>
-          <div class="gm-legend">
-            <div class="gm-legend-group">
-              <strong style="color:#002169;">Arithmétique</strong>
-              <span class="gm-legend-swatch" style="background:rgba(29,113,184,0.88)"></span>
-              <span class="gm-legend-swatch" style="background:rgba(0,144,172,0.88)"></span>
-              <span class="gm-legend-swatch" style="background:rgba(0,33,105,0.88)"></span>
-            </div>
-            <div class="gm-legend-group">
-              <strong style="color:#002169;">Géométrique</strong>
-              <span class="gm-legend-swatch" style="background:rgba(29,113,184,0.38)"></span>
-              <span class="gm-legend-swatch" style="background:rgba(0,144,172,0.38)"></span>
-              <span class="gm-legend-swatch" style="background:rgba(0,33,105,0.38)"></span>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="gm-donut-stack">
-            <div>
-              <div class="gm-chart-label">Score global</div>
-              <div class="gm-donut-wrap">
-                <div class="gm-donut-rel">
-                  <canvas id="gmDonutChart" width="150" height="150"></canvas>
-                  <div class="gm-donut-center">
-                    <span class="big" id="gmDonutNum" style="color:var(--blue)">–</span>
-                    <span class="sm">%</span>
-                  </div>
-                </div>
-                <div class="gm-donut-block-lbl">Arithmétique</div>
-              </div>
-            </div>
-            <div>
-              <div class="gm-donut-wrap">
-                <div class="gm-donut-rel">
-                  <canvas id="gmDonutGeoChart" width="150" height="150"></canvas>
-                  <div class="gm-donut-center">
-                    <span class="big" id="gmDonutGeoNum" style="color:var(--teal)">–</span>
-                    <span class="sm">%</span>
-                  </div>
-                </div>
-                <div class="gm-donut-block-lbl" style="color:var(--teal)">Géométrique</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Potential -->
     <div class="potential-wrap">
@@ -1021,8 +941,9 @@ function renderResults(d) {
     <div class="matrix-wrap">
       <div class="section-title">Votre position dans la matrice de potentiel</div>
 
-      <div class="matrix-axis-title" style="text-align:center;margin-bottom:10px;">
-        <span>Vulnérabilité de l'organisation</span> &nbsp;×&nbsp; <span>Opportunité du changement</span>
+      <div class="matrix-axis-title" style="text-align:left;margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="pot-badge" style="background:var(--blue);color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;">Vulnérabilité de l'organisation</span>
+        <span class="pot-badge" style="background:var(--teal);color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;">Opportunité du changement</span>
       </div>
 
       <div style="overflow-x:auto;">
@@ -1030,21 +951,16 @@ function renderResults(d) {
       </div>
 
       <div class="matrix-legend">
-        <div class="ml-item"><div class="ml-dot" style="background:#1a7a4a"></div>Potentiel élevé</div>
-        <div class="ml-item"><div class="ml-dot" style="background:#2d9f5e"></div>Potentiel assez élevé</div>
-        <div class="ml-item"><div class="ml-dot" style="background:#e8a020"></div>Potentiel modéré</div>
-        <div class="ml-item"><div class="ml-dot" style="background:#c0392b"></div>Potentiel faible</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#95c11f"></div>Potentiel élevé</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#95c11f"></div>Potentiel assez élevé</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#ffed00;border:1px solid #ccc"></div>Potentiel modéré</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#922b21"></div>Potentiel faible</div>
         <div class="ml-item"><div class="ml-dot" style="background:#922b21"></div>Potentiel très faible</div>
         <div class="ml-item"><div class="ml-dot" style="background:var(--gold);border:1px solid #ccc"></div>Votre position ★</div>
       </div>
     </div>
 
-    <!-- Formula note -->
-    <div class="formula-note">
-      <strong>P = V × (A–O)</strong> &nbsp;—&nbsp;
-      Vulnérabilité <strong>${vScore}/50</strong> &nbsp;×&nbsp; Opportunité <strong>${aoScore}/30</strong> &nbsp;=&nbsp; <strong>${P}</strong>
-      &nbsp;|&nbsp; V : <em>${vR}</em> · A–O : <em>${aoR}</em>
-    </div>
+
 
     <!-- Detail sections -->
     <div class="sections-grid">
@@ -1087,58 +1003,7 @@ function renderResults(d) {
 
     </div>
 
-    <!-- Score table -->
-    <div class="table-wrap">
-      <div class="table-title">Détail des scores</div>
-      <table>
-        <thead>
-          <tr>
-            <th>Question</th>
-            <th>Score</th>
-            <th class="td-bar">Progression</th>
-            <th>Max</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${vQuestions.map((pts,i) => {
-            const pct = Math.round((pts/V_Q[i].max)*100);
-            return `<tr>
-              <td>V-Q${i+1}. ${V_Q[i].lbl}</td>
-              <td class="td-score" style="color:var(--blue)">${pts}</td>
-              <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${barColor(pct)}"></div></div></td>
-              <td style="color:#888">${V_Q[i].max}</td>
-            </tr>`;
-          }).join('')}
-          <tr class="total-row">
-            <td>Total Vulnérabilité</td>
-            <td class="td-score" style="color:var(--blue)">${vScore}</td>
-            <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${Math.round(vScore/50*100)}%;background:var(--blue)"></div></div></td>
-            <td style="color:#888">50</td>
-          </tr>
-          ${aoQuestions.map((pts,i) => {
-            const pct = Math.round((pts/AO_Q[i].max)*100);
-            return `<tr>
-              <td>AO-Q${i+1}. ${AO_Q[i].lbl}</td>
-              <td class="td-score" style="color:var(--teal)">${pts}</td>
-              <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${barColor(pct)}"></div></div></td>
-              <td style="color:#888">${AO_Q[i].max}</td>
-            </tr>`;
-          }).join('')}
-          <tr class="total-row">
-            <td>Total Opportunité</td>
-            <td class="td-score" style="color:var(--teal)">${aoScore}</td>
-            <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${Math.round(aoScore/30*100)}%;background:var(--teal)"></div></div></td>
-            <td style="color:#888">30</td>
-          </tr>
-          <tr class="total-row">
-            <td><strong>P = V × (A–O)</strong></td>
-            <td class="td-score" style="color:var(--ink)">${P}</td>
-            <td class="td-bar"><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,Math.round(P/1500*100))}%;background:var(--ink)"></div></div></td>
-            <td style="color:#888">1500</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+
 
     <div class="footer">
       Collerette, P., Lauzier, M., Schneider, R. — <em>Le pilotage du changement</em>, Presses de l'Université du Québec, 3e éd., 2021
