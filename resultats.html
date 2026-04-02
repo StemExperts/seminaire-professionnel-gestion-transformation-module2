@@ -274,15 +274,15 @@ body::before {
 .mao {
   background: var(--ink); color: var(--white);
   font-size: 11px; font-weight: 600;
-  padding: 10px 12px; border-radius: 8px;
-  display: flex; flex-direction: column; align-items: flex-start;
-  justify-content: center; line-height: 1.4; gap: 2px;
+  padding: 10px 8px; border-radius: 8px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; line-height: 1.4; gap: 2px;
 }
 .mao .mao-range {
-  font-family: 'Playfair Display', serif;
-  font-size: 14px; font-weight: 700;
+  font-family: inherit;
+  font-size: 11px; font-weight: 400; opacity: 0.75;
 }
-.mao .mao-label { font-size: 9px; opacity: 0.7; letter-spacing: .05em; }
+.mao .mao-label { display:block; font-size: 11px; font-weight:700; opacity:1; letter-spacing:0; }
 .mc {
   border-radius: 8px; padding: 14px 10px;
   text-align: center; font-size: 12px; font-weight: 600;
@@ -838,24 +838,23 @@ function renderMatrix(vScore, aoScore) {
     { k:'6-13',  range:'6 à 13',  label:'Opportunité faible' },
   ];
 
-  let h = `<div class="mh blank" style="display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:6px;">
-    <div style="font-size:9px;color:var(--grey);text-align:center;line-height:1.4;">
-      <div style="font-weight:700;color:var(--ink-soft)">Vulnérabilité →</div>
-      <div style="color:#aaa">Score /50</div>
-    </div>
+  let h = `<div class="mh blank" style="display:flex;align-items:flex-end;justify-content:center;padding-top:20px;">
+    <span style="background:#0090ac;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:5px 14px;border-radius:20px;line-height:1.2;text-align:center;">
+      Opportunité<br>du changement
+    </span>
   </div>`;
 
   VC.forEach(col => {
     h += `<div class="mh">
-      <span class="mh-range">${col.range} /50</span>
-      <span class="mh-label">${col.label}</span>
+      <span class="mh-label" style="display:block;font-size:11px;font-weight:700;opacity:1;letter-spacing:0;">${col.label}</span>
+      <span class="mh-range" style="font-size:11px;font-family:inherit;font-weight:400;opacity:0.75;">${col.range} /50</span>
     </div>`;
   });
 
-  AOR.forEach(row => {
+  AOR.forEach((row) => {
     h += `<div class="mao">
-      <span class="mao-range">${row.range} /30</span>
       <span class="mao-label">${row.label}</span>
+      <span class="mao-range">${row.range} /30</span>
     </div>`;
     VC.forEach(col => {
       const d = MX[row.k][col.k];
@@ -941,13 +940,21 @@ function renderResults(d) {
     <div class="matrix-wrap">
       <div class="section-title">Votre position dans la matrice de potentiel</div>
 
-      <div class="matrix-axis-title" style="text-align:left;margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;">
-        <span class="pot-badge" style="background:var(--blue);color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;">Vulnérabilité de l'organisation</span>
-        <span class="pot-badge" style="background:var(--teal);color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;">Opportunité du changement</span>
-      </div>
-
       <div style="overflow-x:auto;">
-        <div class="mgrid" style="min-width:480px;">${renderMatrix(vScore, aoScore)}</div>
+        <div style="min-width:480px;">
+          <div style="display:grid;grid-template-columns:140px 1fr;gap:6px;align-items:end;margin-bottom:8px;">
+            <div></div>
+            <div style="display:flex;justify-content:center;">
+              <span style="background:#0090ac;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:5px 18px;border-radius:20px;">
+                Vulnérabilité de l'organisation
+              </span>
+            </div>
+          </div>
+
+          <div class="mgrid">
+            ${renderMatrix(vScore, aoScore)}
+          </div>
+        </div>
       </div>
 
       <div class="matrix-legend">
