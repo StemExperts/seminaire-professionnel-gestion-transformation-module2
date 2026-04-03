@@ -25,6 +25,12 @@ body::before{content:'';position:fixed;top:-180px;right:-180px;width:520px;heigh
 .topbar-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--white);}
 .topbar-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;}
 .topbar-right{display:flex;gap:10px;align-items:center;}
+.date-wrap{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20);padding:4px 8px;border-radius:10px;}
+.date-label{font-size:10px;color:rgba(255,255,255,.75);font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.date-input{background:transparent;border:none;color:#fff;font-family:inherit;font-size:12px;outline:none;}
+.date-input::-webkit-calendar-picker-indicator{filter:invert(1) brightness(1.2);opacity:.9;cursor:pointer;}
+.date-clear{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);width:26px;height:24px;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.date-clear:hover{background:rgba(255,255,255,.22);}
 .badge-count{background:var(--gold);color:var(--ink);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
 .refresh-btn{background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;transition:background .2s;}
 .refresh-btn:hover{background:rgba(255,255,255,.22);}
@@ -34,6 +40,10 @@ body::before{content:'';position:fixed;top:-180px;right:-180px;width:520px;heigh
 .loading-state{text-align:center;padding:60px 20px;font-size:15px;color:#888;}
 .loader{width:36px;height:36px;border:3px solid var(--cream-dark);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;}
 @keyframes spin{to{transform:rotate(360deg);}}
+
+.no-data-state{background:var(--white);border-radius:14px;padding:34px 26px;box-shadow:var(--shadow);text-align:center;color:var(--ink);margin:18px 0;}
+.no-data-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:6px;}
+.no-data-sub{font-size:12px;color:#888;line-height:1.6;max-width:520px;margin:0 auto;}
 
 .section-header{margin:32px 0 16px;}
 .section-header h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;}
@@ -81,6 +91,12 @@ body::before{content:'';position:fixed;top:-180px;right:-180px;width:520px;heigh
 
 .radar-card{background:var(--white);border-radius:16px;padding:24px 20px;box-shadow:var(--shadow);margin-bottom:24px;display:flex;justify-content:center;align-items:center;}
 
+/* ── Matrice ───────────────────────────────────── */
+.matrix-wrap{background:var(--white);border-radius:14px;padding:24px;box-shadow:var(--shadow);margin-bottom:24px;overflow-x:auto;}
+.matrix-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:4px;}
+.matrix-sub{font-size:11px;color:#aaa;margin-bottom:18px;}
+.matrix-svg-wrap{width:100%;overflow-x:auto;}
+
 .table-card{background:var(--white);border-radius:14px;padding:24px;box-shadow:var(--shadow);margin-bottom:24px;overflow-x:auto;}
 .table-top{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
 .table-search{padding:8px 14px;border:1px solid var(--cream-dark);border-radius:8px;font-family:inherit;font-size:13px;min-width:220px;outline:none;}
@@ -115,7 +131,6 @@ tr:hover td{background:#f8f9fc;}
 .upload-status-msg{font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;margin-top:8px;display:none;text-align:center;}
 .upload-status-msg.ok{background:#e8f5c0;color:#3a5a00;display:block;}
 .upload-status-msg.err{background:#fde8e8;color:#8b1a1a;display:block;}
-
 .footer{text-align:center;font-size:11px;color:#aaa;margin-top:40px;padding:0 20px 20px;}
 </style>
 </head>
@@ -128,13 +143,23 @@ tr:hover td{background:#f8f9fc;}
     <div class="topbar-sub">Séminaire Gestion de la Transformation · Tableau de bord collectif</div>
   </div>
   <div class="topbar-right">
+    <div class="date-wrap" title="Filtrer par date de soumission">
+      <span class="date-label">Date</span>
+      <input class="date-input" type="date" id="dateFilter" onchange="applyFilters()"/>
+      <button class="date-clear" onclick="clearDateFilter()" title="Toutes les dates">✕</button>
+    </div>
     <span class="badge-count" id="badge-count">— réponses</span>
     <button class="refresh-btn" onclick="loadData()">↻ Actualiser</button>
   </div>
 </div>
 
 <div class="page">
-  <div id="loadingState" class="loading-state"><div class="loader"></div>Chargement des données Zoho…</div>
+  <div id="loadingState" class="loading-state"><div class="loader"></div>Chargement des données…</div>
+  <div id="noDataMsg" class="no-data-state" style="display:none">
+    <div style="font-size:28px;margin-bottom:8px">📭</div>
+    <div class="no-data-title">Aucun résultat</div>
+    <div class="no-data-sub" id="noDataText">Aucune réponse pour la date sélectionnée.</div>
+  </div>
   <div id="main-content" style="display:none"></div>
 </div>
 
@@ -147,7 +172,7 @@ tr:hover td{background:#f8f9fc;}
         <div class="estep-num">1</div>
         <div>
           <div class="estep-label">Télécharger le CSV depuis Zoho Sheet</div>
-          <div class="estep-desc">Cliquez pour ouvrir le lien de téléchargement direct de la feuille publiée.</div>
+          <div class="estep-desc">Cliquez pour ouvrir le lien de téléchargement direct.</div>
           <input class="csv-link-input" id="csvLinkInput" value="https://sheet.zoho.com/sheet/publishedsheet/5daa2a335fe532709e5a2cb52fb6be78c8d9d0d09adc9b5ff236cf0fae4b7856?type=grid&download=csv" readonly/>
           <button class="download-btn" onclick="window.open(document.getElementById('csvLinkInput').value,'_blank')">⬇ Télécharger le CSV</button>
         </div>
@@ -156,7 +181,7 @@ tr:hover td{background:#f8f9fc;}
         <div class="estep-num">2</div>
         <div>
           <div class="estep-label">Glisser-déposer ou sélectionner le fichier CSV</div>
-          <div class="estep-desc">Le fichier sera traité localement, aucune donnée n'est envoyée à un serveur.</div>
+          <div class="estep-desc">Traitement local, aucune donnée envoyée à un serveur.</div>
           <div class="upload-drop" id="uploadDrop"
             ondragover="event.preventDefault();this.classList.add('drag-over')"
             ondragleave="this.classList.remove('drag-over')"
@@ -171,19 +196,18 @@ tr:hover td{background:#f8f9fc;}
     </div>
   </div>
 </div>
-
 <div class="footer">Données en temps réel · Mise à jour automatique toutes les 30 secondes</div>
 
 <script>
-const BASE_ZOHO_URL = 'https://sheet.zoho.com/sheet/publishedsheet/5daa2a335fe532709e5a2cb52fb6be78c8d9d0d09adc9b5ff236cf0fae4b7856?type=grid&download=csv';
+const ZOHO_URL = 'https://sheet.zoho.com/sheet/publishedsheet/5daa2a335fe532709e5a2cb52fb6be78c8d9d0d09adc9b5ff236cf0fae4b7856?type=grid&download=csv';
 const RESULT_PAGE_URL = 'https://stemexperts.github.io/seminaire-professionnel-gestion-transformation-module2/resultats_strategique.html';
 
 const PROXIES = [
-  url => 'https://api.allorigins.win/raw?url='       + encodeURIComponent(url),
-  url => 'https://corsproxy.io/?url='                + encodeURIComponent(url),
-  url => 'https://api.codetabs.com/v1/proxy?quest='  + encodeURIComponent(url),
-  url => 'https://thingproxy.freeboard.io/fetch/'    + url,
-  url => 'https://jsonp.afeld.me/?url='              + encodeURIComponent(url),
+  u => 'https://api.allorigins.win/raw?url='       + encodeURIComponent(u),
+  u => 'https://corsproxy.io/?url='                + encodeURIComponent(u),
+  u => 'https://api.codetabs.com/v1/proxy?quest='  + encodeURIComponent(u),
+  u => 'https://thingproxy.freeboard.io/fetch/'    + u,
+  u => 'https://jsonp.afeld.me/?url='              + encodeURIComponent(u),
 ];
 
 const VARIABLES = [
@@ -209,84 +233,231 @@ const LABEL_COLS = [
   "12.  [ Attitude par rapport à la gestion ]"
 ];
 
-function getProfile(avg) {
-  if (avg >= 3.5) return {name:"Excellence",strategie:"Vigie",hex:"#95c11f",bg:"#e8f5c0",desc:"Maintenir la position — surveiller l'environnement et anticiper les tendances émergentes pour conserver l'avantage."};
-  if (avg >= 2.75) return {name:"Équilibre",strategie:"Développement",hex:"#1d71b8",bg:"#d0e4f5",desc:"Capitaliser sur les forces — investir dans les domaines à fort potentiel pour progresser et consolider les bases."};
-  if (avg >= 2.0) return {name:"Vulnérabilité",strategie:"Optimisation",hex:"#e8a020",bg:"#fde8cc",desc:"Consolider les bases — prioriser la stabilisation avant toute expansion et corriger les fragilités organisationnelles."};
-  if (avg >= 1.0) return {name:"Inertie / Tension",strategie:"Réinvention",hex:"#e07a5f",bg:"#fce8e3",desc:"Transformation profonde — remettre en question les pratiques établies et renouveler la vision stratégique."};
-  return {name:"Crise",strategie:"Contraction / Sortie",hex:"#c0392b",bg:"#fde8e8",desc:"Décisions critiques urgentes — réduire l'exposition et prendre des mesures structurantes de toute urgence."};
+// Profile colours & labels
+const PROFILES = [
+  {name:"Excellence",  strategie:"Vigie",              hex:"#95c11f", bg:"#e8f5c0", col:0, min:3.5, max:4.0},
+  {name:"Équilibre",   strategie:"Développement",      hex:"#1d71b8", bg:"#d0e4f5", col:1, min:2.75,max:3.5},
+  {name:"Vulnérabilité",strategie:"Optimisation",      hex:"#e8a020", bg:"#fde8cc", col:2, min:2.0, max:2.75},
+  {name:"Inertie/Tension",strategie:"Réinvention",     hex:"#e07a5f", bg:"#fce8e3", col:3, min:1.0, max:2.0},
+  {name:"Crise",       strategie:"Contraction/Sortie", hex:"#c0392b", bg:"#fde8e8", col:4, min:0,   max:1.0},
+];
+function getProfile(avg){
+  for(const p of PROFILES) if(avg>=p.min && (avg<p.max || (avg>=4&&p.col===0))) return p;
+  return PROFILES[4];
 }
 
-function getYear(row) {
-  const d = row["Date de l'atelier"] || row["La réponse est terminée"] || "";
-  const m = d.match(/20\d{2}/); return m ? m[0] : new Date().getFullYear().toString();
+// Year colours for the matrix lines — add more as needed
+const YEAR_COLORS = ["#002169","#0090ac","#95c11f","#e8a020","#e07a5f"];
+
+function todayISO(){ return new Date().toLocaleDateString('en-CA',{timeZone:'America/New_York'}); }
+
+function dateToISO(s){
+  if(!s) return null; s=String(s).trim();
+  const iso=s.match(/(\d{4}-\d{2}-\d{2})/); if(iso) return iso[1];
+  const sl=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(sl) return sl[3]+'-'+sl[1].padStart(2,'0')+'-'+sl[2].padStart(2,'0');
+  const mo={janv:'01',fevr:'02',mars:'03',avr:'04',mai:'05',juin:'06',juil:'07',aout:'08',sept:'09',oct:'10',nov:'11',dec:'12'};
+  const c=s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const m=c.match(/(\d{1,2})\s+([a-z]+)\.?\s+(\d{4})/);
+  if(m) return m[3]+'-'+(mo[m[2].substring(0,4)]||'01')+'-'+m[1].padStart(2,'0');
+  return null;
 }
+function getRowDate(r){ return dateToISO(r["La réponse est terminée"]||r["La réponse est lancée"]||r["Date de l'atelier"]||''); }
+function getYear(r){ const d=r["Date de l'atelier"]||r["La réponse est terminée"]||''; const m=d.match(/20\d{2}/); return m?m[0]:new Date().getFullYear().toString(); }
 
-function parseRows(text) {
-  const trimmed = text.trim();
-  if (!trimmed || trimmed.length < 10) return [];
-  const res = Papa.parse(trimmed, {header:true, skipEmptyLines:true});
-  return res.data.filter(r => r["Response Status"] === "COMPLETED");
-}
-
-let allRows = [];
-let radarChartInstance = null;
-
-function renderDashboard(rows) {
-  allRows = rows;
-  const n = rows.length;
-  document.getElementById("badge-count").textContent = n + " réponse" + (n>1?"s":"");
-
-  const year = n > 0 ? getYear(rows[0]) : new Date().getFullYear();
-
-  const varAverages = SCORE_COLS.map((col, i) => {
-    const vals = rows.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
-    const avg = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
-    return { name: VARIABLES[i], avg: parseFloat(avg.toFixed(2)) };
+function parseRows(text){
+  if(!text||text.length<10) return [];
+  const res=Papa.parse(text.trim(),{header:true,skipEmptyLines:true});
+  return (res.data||[]).filter(r=>{
+    if(!r||typeof r!=='object') return false;
+    const hasId=String(r["Nom"]||r["Prénom"]||r["E-mail"]||'').trim().length>0;
+    const hasScore=SCORE_COLS.some(c=>!isNaN(parseFloat(r[c])));
+    const st=String(r["Response Status"]||'').trim().toUpperCase();
+    const ok=!st||(st==='COMPLETED'||st.startsWith('TERMIN'));
+    return hasId&&hasScore&&ok;
   });
-  const globalAvg = parseFloat((varAverages.reduce((a,b)=>a+b.avg,0)/varAverages.length).toFixed(2));
-  const profile = getProfile(globalAvg);
+}
 
-  const participants = rows.map((r, idx) => {
-    const scores = SCORE_COLS.map(c => parseFloat(r[c])).map(v => isNaN(v)?0:v);
-    const avg = parseFloat((scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2));
-    const resultURL = RESULT_PAGE_URL
-      + '?nom='      + encodeURIComponent(r["Nom"]||"")
-      + '&prenom='   + encodeURIComponent(r["Prénom"]||"")
-      + '&pharmacie='+ encodeURIComponent(r["Pharmacie"]||"")
-      + '&poste='    + encodeURIComponent(r["Poste"]||"")
-      + '&date='     + encodeURIComponent(r["Date de l'atelier"]||"")
-      + SCORE_COLS.map((c,i) => '&q'+(i+1)+'='+encodeURIComponent(r[c]||"")).join("")
-      + LABEL_COLS.map((c,i) => '&l'+(i+1)+'='+encodeURIComponent(r[c]||"")).join("");
-    return { idx, nom: ((r["Prénom"]||"")+" "+(r["Nom"]||"")).trim(), pharmacie:r["Pharmacie"]||"—", poste:r["Poste"]||"—", avg, profile:getProfile(avg), resultURL };
+let allRows=[], radarChart=null;
+
+function clearDateFilter(){ const el=document.getElementById('dateFilter'); if(el)el.value=''; applyFilters(); }
+function applyFilters(){
+  const dv=(document.getElementById('dateFilter')||{}).value||'';
+  const filtered=!dv?allRows.slice():allRows.filter(r=>getRowDate(r)===dv);
+  document.getElementById('badge-count').textContent=filtered.length+' réponse'+(filtered.length>1?'s':'');
+  const noD=document.getElementById('noDataMsg'), noT=document.getElementById('noDataText'), mc=document.getElementById('main-content');
+  if(!filtered.length){
+    mc.style.display='none';
+    noT.textContent=dv?'Aucune réponse pour cette date. Effacez la date pour afficher tous les résultats.':'Aucune réponse disponible pour le moment.';
+    noD.style.display='block'; return;
+  }
+  noD.style.display='none';
+  renderDashboard(filtered);
+}
+
+// ─── Matrix builder ───────────────────────────────────────────────────────────
+function buildMatrix(rows){
+  // Group rows by year — compute average score per variable per year
+  const yearMap={};
+  rows.forEach(r=>{
+    const yr=getYear(r);
+    if(!yearMap[yr]) yearMap[yr]=Array(12).fill(0).map(()=>[]);
+    SCORE_COLS.forEach((c,i)=>{ const v=parseFloat(r[c]); if(!isNaN(v)) yearMap[yr][i].push(v); });
+  });
+  const years=Object.keys(yearMap).sort();
+  // yearAvgs[yr][varIdx] = avg score (0–4)
+  const yearAvgs={};
+  years.forEach(yr=>{
+    yearAvgs[yr]=yearMap[yr].map(vals=>vals.length?parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2)):null);
   });
 
-  const pct = globalAvg/4, r2=44, circ=2*Math.PI*r2;
-  const ringHTML = `
-    <svg viewBox="0 0 110 110">
-      <circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.bg}" stroke-width="10"/>
-      <circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.hex}" stroke-width="10"
-        stroke-dasharray="${pct*circ} ${circ}" stroke-linecap="round" transform="rotate(-90 55 55)"/>
-    </svg>
-    <div class="ring-inner">
-      <span class="ring-num" style="color:${profile.hex}">${globalAvg}</span>
-      <span class="ring-denom">/ 4</span>
-    </div>`;
+  const COLS=PROFILES.length; // 5 profile columns
+  const ROW_H=44, HDR_H=56, TFOOT_H=44, LABEL_W=180, COL_W=130;
+  const W=LABEL_W+COL_W*COLS, H=HDR_H+ROW_H*VARIABLES.length+TFOOT_H;
 
-  const mid = Math.ceil(varAverages.length/2);
-  const left = varAverages.slice(0,mid), right = varAverages.slice(mid);
-  function varHTML(v) {
-    const p = getProfile(v.avg);
-    return `<div class="var-item">
-      <div class="var-header"><span class="var-name">${v.name}</span><span class="var-score" style="color:${p.hex}">${v.avg}</span></div>
-      <div class="var-track"><div class="var-fill" style="width:${(v.avg/4)*100}%;background:${p.hex}"></div></div>
-      <div class="var-label">${p.name} · ${p.strategie}</div>
-    </div>`;
+  // Map avg score → column x centre
+  function scoreToX(avg){
+    // score 4=col0, 3=col1, 2=col2, 1=col3, 0=col4 (linear within each band)
+    const frac=Math.max(0,Math.min(1,(4-avg)/4));
+    return LABEL_W+frac*(COL_W*COLS-COL_W/2)+COL_W/4;
   }
 
-  const html = `
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="font-family:'DM Sans',sans-serif;">`;
+
+  // Background grid
+  svg+=`<rect x="0" y="0" width="${W}" height="${H}" fill="white"/>`;
+  // Row bands
+  VARIABLES.forEach((_,i)=>{
+    const y=HDR_H+i*ROW_H;
+    svg+=`<rect x="0" y="${y}" width="${W}" height="${ROW_H}" fill="${i%2===0?'#f8f9fc':'#ffffff'}"/>`;
+  });
+  // Footer band
+  svg+=`<rect x="0" y="${HDR_H+ROW_H*VARIABLES.length}" width="${W}" height="${TFOOT_H}" fill="#f0f3f8"/>`;
+
+  // Column borders
+  for(let c=0;c<=COLS;c++){
+    const x=LABEL_W+c*COL_W;
+    svg+=`<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="#dde3f0" stroke-width="1"/>`;
+  }
+  // Row borders
+  for(let r=0;r<=VARIABLES.length+1;r++){
+    const y=HDR_H+r*ROW_H;
+    svg+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#dde3f0" stroke-width="1"/>`;
+  }
+  svg+=`<line x1="0" y1="${HDR_H}" x2="${W}" y2="${HDR_H}" stroke="#002169" stroke-width="2"/>`;
+  svg+=`<line x1="0" y1="${HDR_H+ROW_H*VARIABLES.length}" x2="${W}" y2="${HDR_H+ROW_H*VARIABLES.length}" stroke="#002169" stroke-width="1.5"/>`;
+  svg+=`<line x1="${LABEL_W}" y1="0" x2="${LABEL_W}" y2="${H}" stroke="#002169" stroke-width="2"/>`;
+
+  // Header — "Profils organisationnels" label
+  svg+=`<rect x="${LABEL_W}" y="0" width="${COL_W*COLS}" height="26" fill="#002169"/>`;
+  svg+=`<text x="${LABEL_W+COL_W*COLS/2}" y="17" text-anchor="middle" font-size="12" font-weight="700" fill="white">Profils organisationnels</text>`;
+  svg+=`<text x="6" y="17" font-size="11" font-weight="700" fill="#002169">Indicateurs</text>`;
+
+  // Profile column headers
+  PROFILES.forEach((p,c)=>{
+    const x=LABEL_W+c*COL_W;
+    svg+=`<rect x="${x}" y="26" width="${COL_W}" height="${HDR_H-26}" fill="${p.bg}"/>`;
+    svg+=`<text x="${x+COL_W/2}" y="44" text-anchor="middle" font-size="11" font-weight="700" fill="${p.hex}">${p.name}</text>`;
+  });
+
+  // Variable row labels + dots for each year
+  VARIABLES.forEach((v,i)=>{
+    const cy=HDR_H+i*ROW_H+ROW_H/2;
+    svg+=`<text x="8" y="${cy+4}" font-size="11" font-weight="500" fill="#002169">${v}</text>`;
+    // dots for all possible score positions
+    PROFILES.forEach((_,c)=>{
+      const cx=LABEL_W+c*COL_W+COL_W/2;
+      svg+=`<circle cx="${cx}" cy="${cy}" r="9" fill="#e0e7f0" opacity="0.5"/>`;
+    });
+  });
+
+  // Year lines + highlighted dots
+  years.forEach((yr,yi)=>{
+    const color=YEAR_COLORS[yi%YEAR_COLORS.length];
+    const avgs=yearAvgs[yr];
+    const points=avgs.map((avg,i)=>{
+      if(avg===null) return null;
+      return {x:scoreToX(avg), y:HDR_H+i*ROW_H+ROW_H/2};
+    });
+    // Draw polyline
+    const valid=points.filter(p=>p!==null);
+    if(valid.length>1){
+      const d=points.map((p,i)=>p?`${i===0||points.slice(0,i).every(pp=>pp===null)?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`:'').filter(Boolean).join(' ');
+      svg+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>`;
+    }
+    // Dots + year badge on dot
+    points.forEach((p,i)=>{
+      if(!p) return;
+      svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="9" fill="${color}"/>`;
+      svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="6" fill="white" opacity="0.3"/>`;
+    });
+    // Year badge in footer
+    const firstValid=points.find(p=>p!==null);
+    if(firstValid){
+      const avgAll=avgs.filter(a=>a!==null);
+      const globalAvg=avgAll.reduce((a,b)=>a+b,0)/avgAll.length;
+      const fx=scoreToX(globalAvg);
+      const fy=HDR_H+ROW_H*VARIABLES.length+TFOOT_H/2;
+      svg+=`<rect x="${fx-22}" y="${fy-13}" width="44" height="26" rx="13" fill="${color}"/>`;
+      svg+=`<text x="${fx}" y="${fy+4}" text-anchor="middle" font-size="11" font-weight="700" fill="white">${yr}</text>`;
+    }
+  });
+
+  // Footer row labels
+  PROFILES.forEach((p,c)=>{
+    const x=LABEL_W+c*COL_W+COL_W/2;
+    const y=HDR_H+ROW_H*VARIABLES.length+TFOOT_H/2;
+    svg+=`<text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" font-weight="700" fill="${p.hex}">${p.strategie}</text>`;
+  });
+  svg+=`<text x="8" y="${HDR_H+ROW_H*VARIABLES.length+TFOOT_H/2+4}" font-size="10" font-weight="700" fill="#002169">Stratégie suggérée</text>`;
+
+  svg+=`</svg>`;
+  return {svg, years, yearAvgs};
+}
+
+function renderDashboard(rows){
+  const n=rows.length;
+  const year=n>0?getYear(rows[0]):new Date().getFullYear();
+
+  const varAverages=SCORE_COLS.map((col,i)=>{
+    const vals=rows.map(r=>parseFloat(r[col])).filter(v=>!isNaN(v));
+    const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+    return {name:VARIABLES[i],avg:parseFloat(avg.toFixed(2))};
+  });
+  const globalAvg=parseFloat((varAverages.reduce((a,b)=>a+b.avg,0)/varAverages.length).toFixed(2));
+  const profile=getProfile(globalAvg);
+
+  const participants=rows.map((r,idx)=>{
+    const scores=SCORE_COLS.map(c=>parseFloat(r[c])).map(v=>isNaN(v)?0:v);
+    const avg=parseFloat((scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2));
+    const resultURL=RESULT_PAGE_URL
+      +'?nom='+encodeURIComponent(r["Nom"]||'')
+      +'&prenom='+encodeURIComponent(r["Prénom"]||'')
+      +'&pharmacie='+encodeURIComponent(r["Pharmacie"]||'')
+      +'&poste='+encodeURIComponent(r["Poste"]||'')
+      +'&date='+encodeURIComponent(r["Date de l'atelier"]||'')
+      +SCORE_COLS.map((c,i)=>'&q'+(i+1)+'='+encodeURIComponent(r[c]||'')).join('')
+      +LABEL_COLS.map((c,i)=>'&l'+(i+1)+'='+encodeURIComponent(r[c]||'')).join('');
+    return {nom:((r["Prénom"]||'')+' '+(r["Nom"]||'')).trim(),pharmacie:r["Pharmacie"]||'—',poste:r["Poste"]||'—',avg,profile:getProfile(avg),resultURL};
+  });
+
+  const pct=globalAvg/4, r2=44, circ=2*Math.PI*r2;
+  const ringHTML=`<svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.bg}" stroke-width="10"/><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.hex}" stroke-width="10" stroke-dasharray="${pct*circ} ${circ}" stroke-linecap="round" transform="rotate(-90 55 55)"/></svg><div class="ring-inner"><span class="ring-num" style="color:${profile.hex}">${globalAvg}</span><span class="ring-denom">/ 4 · ${Math.round(pct*100)}%</span></div>`;
+
+  const mid=Math.ceil(varAverages.length/2);
+  function varHTML(v){
+    const p=getProfile(v.avg);
+    return `<div class="var-item"><div class="var-header"><span class="var-name">${v.name}</span><span class="var-score" style="color:${p.hex}">${v.avg} <span style="font-size:10px;opacity:.7;">(${Math.round(v.avg/4*100)}%)</span></span></div><div class="var-track"><div class="var-fill" style="width:${(v.avg/4)*100}%;background:${p.hex}"></div></div><div class="var-label">${p.name} · ${p.strategie}</div></div>`;
+  }
+
+  const {svg:matrixSVG, years:matYears}=buildMatrix(rows);
+
+  // Year legend
+  const yearLegend=matYears.map((yr,i)=>`<span class="legende-item"><span class="legende-dot" style="background:${YEAR_COLORS[i%YEAR_COLORS.length]}"></span>${yr}</span>`).join('');
+
+  const html=`
     <div class="kpi-row">
-      <div class="kpi k1"><div class="kpi-label">Score moyen global</div><div class="kpi-val" style="color:${profile.hex}">${globalAvg}</div><div class="kpi-sub">sur 4.0</div></div>
+      <div class="kpi k1"><div class="kpi-label">Score moyen global</div><div class="kpi-val" style="color:${profile.hex}">${globalAvg}</div><div class="kpi-sub">sur 4.0 · ${Math.round(globalAvg/4*100)}%</div></div>
       <div class="kpi k2"><div class="kpi-label">Participants</div><div class="kpi-val">${n}</div><div class="kpi-sub">réponses complètes</div></div>
       <div class="kpi k3"><div class="kpi-label">Profil dominant</div><div class="kpi-val" style="font-size:18px;margin-top:6px;color:${profile.hex}">${profile.name}</div><div class="kpi-sub">${profile.strategie}</div></div>
       <div class="kpi k4"><div class="kpi-label">Année de référence</div><div class="kpi-val">${year}</div><div class="kpi-sub">première mesure</div></div>
@@ -297,7 +468,7 @@ function renderDashboard(rows) {
       <div class="profil-details">
         <div class="profil-badge" style="background:${profile.hex}">${profile.name}</div>
         <div class="profil-name">Stratégie recommandée : ${profile.strategie}</div>
-        <div class="profil-desc">${profile.desc}</div>
+        <div class="profil-desc">${profile.desc||''}</div>
       </div>
     </div>
 
@@ -309,94 +480,106 @@ function renderDashboard(rows) {
       <span class="legende-item"><span class="legende-dot" style="background:#c0392b"></span>Crise (< 1.0) · Contraction/Sortie</span>
     </div>
 
-    <div class="section-header"><h2>Profil collectif</h2><p>Moyenne des 12 variables organisationnelles</p></div>
+    <div class="section-header"><h2>Profil collectif — Radar</h2><p>Moyenne des 12 variables organisationnelles</p></div>
     <div class="radar-card"><canvas id="radarChart" width="420" height="420"></canvas></div>
+
+    <div class="section-header"><h2>Matrice des dynamiques organisationnelles</h2><p>Les indicateurs reliés par année selon le profil dominant</p></div>
+    <div class="matrix-wrap">
+      <div class="matrix-svg-wrap">${matrixSVG}</div>
+      ${matYears.length>0?`<div class="legende-row" style="margin-top:14px;margin-bottom:0">${yearLegend}</div>`:''}
+    </div>
 
     <div class="section-header"><h2>Résultats par variable</h2></div>
     <div class="grid-2">
-      <div class="card" style="padding:20px">${left.map(varHTML).join("")}</div>
-      <div class="card" style="padding:20px">${right.map(varHTML).join("")}</div>
+      <div class="card" style="padding:20px">${varAverages.slice(0,mid).map(varHTML).join('')}</div>
+      <div class="card" style="padding:20px">${varAverages.slice(mid).map(varHTML).join('')}</div>
     </div>
 
     <div class="section-header"><h2>Résultats par participant</h2></div>
     <div class="table-card">
-      <div class="table-top">
-        <input class="table-search" type="text" placeholder="Rechercher un nom, une pharmacie…" oninput="filterTable(this.value)"/>
-      </div>
-      <table><thead><tr>
-        <th>Participant</th><th>Pharmacie</th><th>Poste</th><th>Score</th><th>Profil</th><th>Stratégie</th><th>Fiche</th>
-      </tr></thead>
+      <div class="table-top"><input class="table-search" type="text" placeholder="Rechercher un nom, une pharmacie…" oninput="filterTable(this.value)"/></div>
+      <table><thead><tr><th>Participant</th><th>Pharmacie</th><th>Poste</th><th>Score</th><th>Profil</th><th>Stratégie</th><th>Fiche</th></tr></thead>
       <tbody id="tableBody">
-        ${participants.map(p => `<tr>
-          <td>${p.nom||"—"}</td><td>${p.pharmacie}</td><td>${p.poste}</td>
-          <td style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:${p.profile.hex}">${p.avg}</td>
+        ${participants.map(p=>`<tr>
+          <td>${p.nom||'—'}</td><td>${p.pharmacie}</td><td>${p.poste}</td>
+          <td style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:${p.profile.hex}">${p.avg}<span style="font-size:10px;font-weight:400;color:#888;margin-left:3px;">(${Math.round(p.avg/4*100)}%)</span></td>
           <td><span class="badge" style="background:${p.profile.hex}">${p.profile.name}</span></td>
           <td><span class="strat-tag" style="background:${p.profile.bg};color:${p.profile.hex}">${p.profile.strategie}</span></td>
           <td class="td-link"><a href="${p.resultURL}">Voir →</a></td>
-        </tr>`).join("")}
+        </tr>`).join('')}
       </tbody></table>
     </div>`;
 
-  document.getElementById("loadingState").style.display = "none";
-  document.getElementById("main-content").innerHTML = html;
-  document.getElementById("main-content").style.display = "block";
+  document.getElementById('loadingState').style.display='none';
+  document.getElementById('main-content').innerHTML=html;
+  document.getElementById('main-content').style.display='block';
 
-  if (radarChartInstance) radarChartInstance.destroy();
-  const ctx = document.getElementById("radarChart").getContext("2d");
-  radarChartInstance = new Chart(ctx, {
-    type:"radar",
-    data:{
-      labels: VARIABLES.map(v => v.length>16 ? v.substring(0,15)+"…" : v),
-      datasets:[{data:varAverages.map(v=>v.avg),backgroundColor:profile.hex+"22",borderColor:profile.hex,borderWidth:2,pointBackgroundColor:profile.hex,pointRadius:4}]
-    },
-    options:{responsive:false,scales:{r:{min:0,max:4,ticks:{stepSize:1,font:{size:10},color:"#888",backdropColor:"transparent"},grid:{color:"rgba(0,33,105,0.08)"},pointLabels:{font:{size:10,family:"'DM Sans'"},color:"#002169"}}},plugins:{legend:{display:false}}}
+  if(radarChart) radarChart.destroy();
+  radarChart=new Chart(document.getElementById('radarChart').getContext('2d'),{
+    type:'radar',
+    data:{labels:VARIABLES.map(v=>v.length>16?v.substring(0,15)+'…':v),datasets:[{data:varAverages.map(v=>v.avg),backgroundColor:profile.hex+'22',borderColor:profile.hex,borderWidth:2,pointBackgroundColor:profile.hex,pointRadius:4}]},
+    options:{responsive:false,scales:{r:{min:0,max:4,ticks:{stepSize:1,font:{size:10},color:'#888',backdropColor:'transparent'},grid:{color:'rgba(0,33,105,0.08)'},pointLabels:{font:{size:10,family:"'DM Sans'"},color:'#002169'}}},plugins:{legend:{display:false}}}
   });
 }
 
-function filterTable(val) {
-  const q = val.toLowerCase();
-  document.querySelectorAll("#tableBody tr").forEach(tr => { tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none"; });
+function filterTable(val){
+  const q=val.toLowerCase();
+  document.querySelectorAll('#tableBody tr').forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none';});
 }
 
-async function loadData() {
-  document.getElementById("loadingState").style.display = "block";
-  const urlWithBust = BASE_ZOHO_URL + (BASE_ZOHO_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
-  for (const proxy of PROXIES) {
-    try {
-      const controller = new AbortController();
-      setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(proxy(urlWithBust), {cache:'no-store', signal:controller.signal});
-      if (!res.ok) continue;
-      const text = await res.text();
-      const rows = parseRows(text);
-      if (rows.length) { renderDashboard(rows); return; }
-    } catch(e) { continue; }
+async function loadData(){
+  document.getElementById('loadingState').style.display='block';
+
+  const urlWithBust = ZOHO_URL + '&_t=' + Date.now();
+  let text = null;
+  for(const proxy of PROXIES){
+    try{
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 7000);
+      const r = await fetch(proxy(urlWithBust), {cache:'no-store', signal:ctrl.signal});
+      clearTimeout(timer);
+      if(r.ok){
+        const t = await r.text();
+        if(t && t.length > 100){ text = t; break; }
+      }
+    }catch(e){ continue; }
   }
-  document.getElementById("loadingState").innerHTML = "⚠️ Chargement automatique indisponible. Utilisez le Plan B ci-dessous.";
+
+  if(text){
+    const rows = parseRows(text);
+    if(rows.length){
+      allRows = rows;
+      const df = document.getElementById('dateFilter');
+      if(df && !df.value) df.value = todayISO();
+      applyFilters();
+      return;
+    }
+  }
+  document.getElementById('loadingState').innerHTML='⚠️ Chargement automatique indisponible. Utilisez le Plan B ci-dessous.';
 }
 
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById("uploadDrop").classList.remove("drag-over");
-  processCSVFile(e.dataTransfer.files[0]);
-}
-
-function processCSVFile(file) {
-  const el = document.getElementById("uploadStatus");
-  if (!file) { el.className="upload-status-msg err"; el.textContent="Fichier invalide."; return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    const rows = parseRows(e.target.result);
-    if (!rows.length) { el.className="upload-status-msg err"; el.textContent="Aucune réponse complète trouvée dans le fichier."; return; }
-    renderDashboard(rows);
-    el.className="upload-status-msg ok";
-    el.textContent="✓ " + rows.length + " participant" + (rows.length>1?"s":"") + " chargé" + (rows.length>1?"s":"") + ".";
+function handleDrop(e){e.preventDefault();document.getElementById('uploadDrop').classList.remove('drag-over');processCSVFile(e.dataTransfer.files[0]);}
+function processCSVFile(file){
+  const el=document.getElementById('uploadStatus');
+  if(!file){el.className='upload-status-msg err';el.textContent='Fichier invalide.';return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const rows=parseRows(e.target.result);
+    if(!rows.length){el.className='upload-status-msg err';el.textContent='Aucune réponse complète trouvée.';return;}
+    allRows=rows;
+    const df=document.getElementById('dateFilter');
+    if(df&&!df.value) df.value=todayISO();
+    applyFilters();
+    el.className='upload-status-msg ok';
+    el.textContent='✓ '+rows.length+' participant'+(rows.length>1?'s':'')+' chargé'+(rows.length>1?'s':'')+'.';
   };
   reader.readAsText(file);
 }
 
+const dfInit=document.getElementById('dateFilter');
+if(dfInit&&!dfInit.value) dfInit.value=todayISO();
 loadData();
-setInterval(loadData, 30000);
+setInterval(loadData,30000);
 </script>
 </body>
 </html>
