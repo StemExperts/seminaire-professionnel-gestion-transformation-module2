@@ -205,15 +205,16 @@ tr:hover td{background:#f8f9fc;}
 <div class="footer">Données en temps réel · Mise à jour automatique toutes les 30 secondes</div>
 
 <script>
-const ZOHO_URL = 'https://sheet.zohopublic.com/sheet/publishedsheet/332097562c214ab6d58295f7ea79be0d37ff82bd3a81ddcfd203eb02899f382e?type=grid&download=csv';
+// ─── CONFIGURATION ───
+// Lien corrigé pour l'API (published au lieu de publishedsheet)
+const ZOHO_URL = 'https://sheet.zoho.com/sheet/published/5daa2a335fe532709e5a2cb52fb6be78c8d9d0d09adc9b5ff236cf0fae4b7856?download=csv';
 const RESULT_PAGE_URL = 'https://stemexperts.github.io/seminaire-professionnel-gestion-transformation-module2/resultats_strategique.html';
 
+// Boucle de proxies avec Cache-Busting propre
 const PROXIES = [
-  u => 'https://api.allorigins.win/raw?url='       + encodeURIComponent(u),
-  u => 'https://corsproxy.io/?url='                + encodeURIComponent(u),
-  u => 'https://api.codetabs.com/v1/proxy?quest='  + encodeURIComponent(u),
-  u => 'https://thingproxy.freeboard.io/fetch/'    + u,
-  u => 'https://jsonp.afeld.me/?url='              + encodeURIComponent(u),
+  url => 'https://corsproxy.io/?url=' + encodeURIComponent(url + '&t=' + Date.now()),
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url + '&t=' + Date.now()),
+  url => 'https://thingproxy.freeboard.io/fetch/' + url + '&t=' + Date.now()
 ];
 
 const VARIABLES = [
@@ -240,7 +241,7 @@ const PROFILES = [
   {name:"Excellence",  strategie:"Vigie",              hex:"#95c11f", bg:"#e8f5c0", col:0, min:3.5, max:4.0},
   {name:"Équilibre",   strategie:"Développement",      hex:"#1d71b8", bg:"#d0e4f5", col:1, min:2.75,max:3.5},
   {name:"Vulnérabilité",strategie:"Optimisation",      hex:"#e8a020", bg:"#fde8cc", col:2, min:2.0, max:2.75},
-  {name:"Inertie/Tension",strategie:"Réinvention",     hex:"#e07a5f", bg:"#fce8e3", col:3, min:1.0, max:2.0},
+  {name:"Inertie/Tension",strategie:"Réinvention",      hex:"#e07a5f", bg:"#fce8e3", col:3, min:1.0, max:2.0},
   {name:"Crise",       strategie:"Contraction/Sortie", hex:"#c0392b", bg:"#fde8e8", col:4, min:0,   max:1.0},
 ];
 function getProfile(avg){
@@ -248,10 +249,16 @@ function getProfile(avg){
   return PROFILES[4];
 }
 
-// Year colours for the matrix lines — add more as needed
 const YEAR_COLORS = ["#002169","#0090ac","#95c11f","#e8a020","#e07a5f"];
 
-function todayISO(){ return new Date().toLocaleDateString('en-CA',{timeZone:'America/New_York'}); }
+// Fonction pour récupérer la date de Montréal au format YYYY-MM-DD
+function todayISO(){
+  const d = new Date();
+  // Utilisation de l'heure locale de l'ordinateur pour éviter le décalage UTC
+  return d.getFullYear() + '-' + 
+         String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+         String(d.getDate()).padStart(2, '0');
+}
 
 function dateToISO(s){
   if(!s) return null; s=String(s).trim();
@@ -301,7 +308,6 @@ function applyFilters(){
 
 // ─── Matrix builder ───────────────────────────────────────────────────────────
 function buildMatrix(rows){
-  // Group rows by year — compute average score per variable per year
   const yearMap={};
   rows.forEach(r=>{
     const yr=getYear(r);
@@ -309,39 +315,30 @@ function buildMatrix(rows){
     SCORE_COLS.forEach((c,i)=>{ const v=parseFloat(r[c]); if(!isNaN(v)) yearMap[yr][i].push(v); });
   });
   const years=Object.keys(yearMap).sort();
-  // yearAvgs[yr][varIdx] = avg score (0–4)
   const yearAvgs={};
   years.forEach(yr=>{
     yearAvgs[yr]=yearMap[yr].map(vals=>vals.length?parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2)):null);
   });
 
-  const COLS=PROFILES.length; // 5 profile columns
+  const COLS=PROFILES.length; 
   const ROW_H=44, HDR_H=56, TFOOT_H=44, LABEL_W=180, COL_W=130;
   const W=LABEL_W+COL_W*COLS, H=HDR_H+ROW_H*VARIABLES.length+TFOOT_H;
 
-  // Map avg score → column x centre (score 4=col0 centre, score 0=col4 centre)
   function scoreToX(avg){
     return LABEL_W + (4.5 - Math.max(0, Math.min(4, avg))) * COL_W;
   }
 
   let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="font-family:'DM Sans',sans-serif;">`;
-
-  // Background grid
   svg+=`<rect x="0" y="0" width="${W}" height="${H}" fill="white"/>`;
-  // Row bands
   VARIABLES.forEach((_,i)=>{
     const y=HDR_H+i*ROW_H;
     svg+=`<rect x="0" y="${y}" width="${W}" height="${ROW_H}" fill="${i%2===0?'#f8f9fc':'#ffffff'}"/>`;
   });
-  // Footer band
   svg+=`<rect x="0" y="${HDR_H+ROW_H*VARIABLES.length}" width="${W}" height="${TFOOT_H}" fill="#f0f3f8"/>`;
-
-  // Column borders
   for(let c=0;c<=COLS;c++){
     const x=LABEL_W+c*COL_W;
     svg+=`<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="#dde3f0" stroke-width="1"/>`;
   }
-  // Row borders
   for(let r=0;r<=VARIABLES.length+1;r++){
     const y=HDR_H+r*ROW_H;
     svg+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#dde3f0" stroke-width="1"/>`;
@@ -349,31 +346,25 @@ function buildMatrix(rows){
   svg+=`<line x1="0" y1="${HDR_H}" x2="${W}" y2="${HDR_H}" stroke="#002169" stroke-width="2"/>`;
   svg+=`<line x1="0" y1="${HDR_H+ROW_H*VARIABLES.length}" x2="${W}" y2="${HDR_H+ROW_H*VARIABLES.length}" stroke="#002169" stroke-width="1.5"/>`;
   svg+=`<line x1="${LABEL_W}" y1="0" x2="${LABEL_W}" y2="${H}" stroke="#002169" stroke-width="2"/>`;
-
-  // Header — "Profils organisationnels" label
   svg+=`<rect x="${LABEL_W}" y="0" width="${COL_W*COLS}" height="26" fill="#002169"/>`;
   svg+=`<text x="${LABEL_W+COL_W*COLS/2}" y="17" text-anchor="middle" font-size="12" font-weight="700" fill="white">Profils organisationnels</text>`;
   svg+=`<text x="6" y="17" font-size="11" font-weight="700" fill="#002169">Indicateurs</text>`;
 
-  // Profile column headers
   PROFILES.forEach((p,c)=>{
     const x=LABEL_W+c*COL_W;
     svg+=`<rect x="${x}" y="26" width="${COL_W}" height="${HDR_H-26}" fill="${p.bg}"/>`;
     svg+=`<text x="${x+COL_W/2}" y="44" text-anchor="middle" font-size="11" font-weight="700" fill="${p.hex}">${p.name}</text>`;
   });
 
-  // Variable row labels + dots for each year
   VARIABLES.forEach((v,i)=>{
     const cy=HDR_H+i*ROW_H+ROW_H/2;
     svg+=`<text x="6" y="${cy+4}" font-size="10" font-weight="500" fill="#002169" textLength="${LABEL_W-10}" lengthAdjust="spacingAndGlyphs">${v}</text>`;
-    // dots for all possible score positions
     PROFILES.forEach((_,c)=>{
       const cx=LABEL_W+c*COL_W+COL_W/2;
       svg+=`<circle cx="${cx}" cy="${cy}" r="9" fill="#e0e7f0" opacity="0.5"/>`;
     });
   });
 
-  // Year lines + highlighted dots
   years.forEach((yr,yi)=>{
     const color=YEAR_COLORS[yi%YEAR_COLORS.length];
     const avgs=yearAvgs[yr];
@@ -381,31 +372,24 @@ function buildMatrix(rows){
       if(avg===null) return null;
       return {x:scoreToX(avg), y:HDR_H+i*ROW_H+ROW_H/2};
     });
-    // Draw polyline
     const valid=points.filter(p=>p!==null);
     if(valid.length>1){
       const d=points.map((p,i)=>p?`${i===0||points.slice(0,i).every(pp=>pp===null)?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`:'').filter(Boolean).join(' ');
       svg+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>`;
     }
-    // Dots + year badge on dot
     points.forEach((p,i)=>{
       if(!p) return;
       svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="9" fill="${color}"/>`;
       svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="6" fill="white" opacity="0.3"/>`;
     });
-    // Year badge in footer
-    const firstValid=points.find(p=>p!==null);
-    if(firstValid){} // year shown as legend below SVG
   });
 
-  // Footer row labels
   PROFILES.forEach((p,c)=>{
     const x=LABEL_W+c*COL_W+COL_W/2;
     const y=HDR_H+ROW_H*VARIABLES.length+TFOOT_H/2;
     svg+=`<text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" font-weight="700" fill="${p.hex}">${p.strategie}</text>`;
   });
   svg+=`<text x="8" y="${HDR_H+ROW_H*VARIABLES.length+TFOOT_H/2+4}" font-size="10" font-weight="700" fill="#002169">Stratégie suggérée</text>`;
-
   svg+=`</svg>`;
   return {svg, years, yearAvgs};
 }
@@ -446,11 +430,8 @@ function renderDashboard(rows){
   }
 
   const {svg:matrixSVG, years:matYears}=buildMatrix(rows);
-
-  // Year legend
   const yearLegend=matYears.map((yr,i)=>`<span class="legende-item"><span class="legende-dot" style="background:${YEAR_COLORS[i%YEAR_COLORS.length]}"></span>${yr}</span>`).join('');
 
-  // Répartition des profils
   const profCounts={};
   PROFILES.forEach(p=>profCounts[p.name]=0);
   rows.forEach(r=>{
@@ -546,19 +527,17 @@ function filterTable(val){
   document.querySelectorAll('#tableBody tr').forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none';});
 }
 
+// ─── CHARGEMENT ROBUSTE SANS SETINTERVAL ───
 async function loadData(){
   document.getElementById('loadingState').style.display='block';
 
-  const urlWithBust = ZOHO_URL + '&_t=' + Date.now();
   let text = null;
+  // Exécution de la boucle de proxies
   for(const proxy of PROXIES){
     try{
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 7000);
-      const r = await fetch(proxy(urlWithBust), {cache:'no-store', signal:ctrl.signal});
-      clearTimeout(timer);
-      if(r.ok){
-        const t = await r.text();
+      const res = await fetch(proxy(ZOHO_URL), { cache: 'no-store' });
+      if(res.ok){
+        const t = await res.text();
         if(t && t.length > 100){ text = t; break; }
       }
     }catch(e){ continue; }
@@ -569,6 +548,7 @@ async function loadData(){
     if(rows.length){
       allRows = rows;
       const df = document.getElementById('dateFilter');
+      // Assignation de la date locale si vide
       if(df && !df.value) df.value = todayISO();
       applyFilters();
       return;
@@ -595,10 +575,10 @@ function processCSVFile(file){
   reader.readAsText(file);
 }
 
+// Initialisation
 const dfInit=document.getElementById('dateFilter');
 if(dfInit&&!dfInit.value) dfInit.value=todayISO();
 loadData();
-setInterval(loadData,30000);
 </script>
 </body>
 </html>
