@@ -527,14 +527,17 @@ function filterTable(val){
 async function loadData(){
   document.getElementById('loadingState').style.display='block';
 
+  // Ajout du jeton unique pour forcer le téléchargement des nouvelles données
+  const urlWithBust = ZOHO_URL + '&_t=' + Date.now();
   let text = null;
-  // Exécution de la boucle de proxies
+
+  // Boucle de proxies : passe au suivant si le premier plante ou est trop lent
   for(const proxy of PROXIES){
     try{
-      const res = await fetch(proxy(ZOHO_URL), { cache: 'no-store' });
+      const res = await fetch(proxy(urlWithBust), { cache: 'no-store' });
       if(res.ok){
         const t = await res.text();
-        if(t && t.length > 100){ text = t; break; }
+        if(t && t.length > 100){ text = t; break; } // Succès, on sort de la boucle
       }
     }catch(e){ continue; }
   }
@@ -544,8 +547,7 @@ async function loadData(){
     if(rows.length){
       allRows = rows;
       const df = document.getElementById('dateFilter');
-      // Assignation de la date locale si vide
-      if(df && !df.value) df.value = todayISO();
+      if(df && !df.value) df.value = todayISO(); // Applique la date locale
       applyFilters();
       return;
     }
