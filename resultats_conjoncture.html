@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mes résultats — La conjoncture externe</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --ink:#002169;--ink-soft:#1d71b8;--cream:#f5f7fa;--cream-dark:#e8ecf2;
+  --gold:#ffed00;--gold-light:#fff176;--blue:#1d71b8;--blue-light:#d0e4f5;
+  --green:#95c11f;--green-light:#e8f5c0;--teal:#0090ac;--white:#ffffff;
+  --red:#c0392b;--red-light:#fde8e8;--amber:#e8a020;--amber-light:#fff3cd;
+  --shadow:0 4px 28px rgba(0,33,105,0.10);--radius:14px;--border:#dde3f0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
+
+/* TOPBAR */
+.topbar{background:var(--ink);color:var(--white);padding:14px 28px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;overflow:hidden;}
+.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ffed00,#95c11f,#0090ac,#1d71b8);}
+.topbar-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;}
+.topbar-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;}
+
+/* PAGE */
+.page{max-width:860px;margin:0 auto;padding:48px 20px 80px;}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:36px;}
+.eyebrow{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:10px;display:block;}
+.header h1{font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,34px);font-weight:700;line-height:1.2;margin-bottom:6px;}
+.participant-line{font-size:20px;color:#777;margin-top:4px;}
+.participant-line strong{color:var(--blue);font-weight:600;font-size:22px;}
+.divider{width:52px;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light));margin:18px auto 0;border-radius:2px;}
+
+/* SCORE SUMMARY CARDS */
+.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+@media(max-width:600px){.summary-row{grid-template-columns:1fr;}}
+.summary-card{background:var(--white);border-radius:var(--radius);padding:20px 18px;box-shadow:var(--shadow);text-align:center;position:relative;overflow:hidden;}
+.summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
+.sc1::before{background:linear-gradient(90deg,var(--ink),var(--blue));}
+.sc2::before{background:linear-gradient(90deg,var(--blue),#4a90d9);}
+.sc3::before{background:linear-gradient(90deg,var(--teal),#00b8d4);}
+.sc-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#888;margin-bottom:8px;}
+.sc-val{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;line-height:1;}
+.sc-sub{font-size:11px;color:#888;margin-top:6px;}
+
+/* PROFIL CARD */
+.profil-card{border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);margin-bottom:28px;border:1px solid var(--border);}
+.profil-eyebrow{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;opacity:.75;}
+.profil-name{font-family:'Playfair Display',serif;font-size:clamp(22px,4vw,30px);font-weight:700;margin-bottom:4px;}
+.profil-strat{font-size:13px;font-weight:600;margin-bottom:16px;opacity:.8;}
+.profil-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:600px){.profil-grid{grid-template-columns:1fr;}}
+.profil-col h4{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;opacity:.7;}
+.profil-col ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.profil-col li{font-size:12px;line-height:1.5;display:flex;align-items:baseline;gap:7px;}
+.profil-col li::before{content:'→';font-size:10px;flex-shrink:0;opacity:.6;}
+
+/* MATRICE */
+.matrice-card{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:28px;}
+.matrice-card h3{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:4px;}
+.matrice-sub{font-size:12px;color:var(--ink-soft);margin-bottom:18px;}
+.matrice-wrap{overflow-x:auto;}
+.matrice-table{border-collapse:collapse;width:100%;min-width:520px;font-size:11px;}
+.matrice-table th,.matrice-table td{border:1px solid var(--border);padding:8px 10px;text-align:center;}
+.matrice-table .row-hdr{text-align:left;font-weight:700;background:var(--ink);color:var(--white);font-size:10px;}
+.matrice-table .col-hdr{background:var(--cream-dark);font-weight:700;font-size:10px;color:var(--ink);}
+.matrice-table .corner{background:var(--ink);color:var(--white);font-size:9px;font-weight:700;}
+.matrice-table .m-excellence{background:#e8f5c0;color:#3b6d11;font-weight:700;}
+.matrice-table .m-equilibre{background:#d0e4f5;color:#0c447c;font-weight:700;}
+.matrice-table .m-vulnerabilite{background:#fff3cd;color:#856404;font-weight:700;}
+.matrice-table .m-inertie{background:#fce8e3;color:#993c1d;font-weight:700;}
+.matrice-table .m-crise{background:#fde8e8;color:#721c24;font-weight:700;}
+.matrice-table td.active-cell{outline:3px solid #002169;outline-offset:-2px;}
+
+/* SCORE BARS */
+.card{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:24px;}
+.card-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:16px;}
+.score-row{display:grid;grid-template-columns:210px 1fr 44px 110px;align-items:center;gap:12px;margin-bottom:11px;}
+@media(max-width:580px){.score-row{grid-template-columns:1fr 44px;}}
+.score-name{font-size:12px;font-weight:500;}
+.score-track{height:7px;background:var(--cream-dark);border-radius:4px;overflow:hidden;}
+.score-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.fill-green{background:var(--green);}
+.fill-amber{background:var(--amber);}
+.fill-red{background:var(--red);}
+.score-num{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;text-align:right;}
+.score-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;text-align:center;white-space:nowrap;}
+.chip-5{background:#e8f5c0;color:#3b6d11;}
+.chip-4{background:#d0e4f5;color:#0c447c;}
+.chip-3{background:#fff3cd;color:#856404;}
+.chip-2{background:#fce8e3;color:#993c1d;}
+.chip-1{background:#fde8e8;color:#721c24;}
+
+/* RADAR */
+.radar-card{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:24px;display:flex;justify-content:center;}
+.radar-wrap{max-width:420px;width:100%;}
+
+/* LEGEND */
+.legend-card{background:var(--white);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow);margin-bottom:24px;}
+.legend-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+
+/* NO PARAMS */
+.no-params{max-width:500px;margin:80px auto;text-align:center;padding:40px;background:var(--white);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);}
+.no-params h2{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:12px;}
+.no-params p{font-size:14px;color:var(--ink-soft);}
+
+/* FOOTER */
+.footer{text-align:center;font-size:11px;color:#aaa;margin-top:40px;padding-bottom:40px;}
+.ref{font-size:10px;color:#bbb;margin-top:6px;font-style:italic;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">La conjoncture externe de l'organisation</div>
+    <div class="topbar-sub">Formation Pratique en Gestion · Module 2 · Séminaire Gestion de la Transformation</div>
+  </div>
+</div>
+
+<div id="root"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// SCORE MAP
+// ─────────────────────────────────────────────
+const SCORE_MAP={
+  'Très défavorable':1,'Défavorable':2,'Neutre':3,'Favorable':4,'Très favorable':5,
+  'Très faible':1,'Faible':2,'Moyenne':3,'Élevée':4,'Très élevée':5,
+  'Non adéquate':1,'Peu adéquate':2,'Tout juste adéquate':3,'Adéquate':4,'Très adéquate':5,
+};
+
+// ─────────────────────────────────────────────
+// QUESTION DEFINITIONS
+// ─────────────────────────────────────────────
+const ENV_ITEMS=[
+  {key:'env1',label:"L'évolution de la composition de la clientèle"},
+  {key:'env2',label:"L'évolution de l'opinion de la clientèle"},
+  {key:'env3',label:"La disponibilité de la main-d'œuvre"},
+  {key:'env4',label:"L'évolution de la concurrence"},
+  {key:'env5',label:"Les rapports avec les organisations syndicales"},
+  {key:'env6',label:"La facilité d'accès au capital"},
+  {key:'env7',label:"L'attitude des instances gouvernementales"},
+  {key:'env8',label:"Les tendances législatives et réglementaires"},
+  {key:'env9',label:"L'attitude et l'action des médias et groupes de pression"},
+  {key:'env10',label:"L'évolution des courants de pensée"},
+  {key:'env11',label:"L'évolution technologique"},
+];
+const PERF_ITEMS=[
+  {key:'perf1',label:"Les résultats obtenus à ce jour témoignent d'une performance"},
+  {key:'perf2',label:"L'efficience atteinte (utilisation des ressources) indique une performance"},
+  {key:'perf3',label:"La perception que la clientèle a de l'organisation indique une performance"},
+];
+const CAP_ITEMS=[
+  {key:'cap1',label:'Mandat/mission'},
+  {key:'cap2',label:'Gamme de produits/services'},
+  {key:'cap3',label:'Culture/dynamique interne'},
+  {key:'cap4',label:'Expertise des ressources humaines'},
+  {key:'cap5',label:'État des ressources financières'},
+  {key:'cap6',label:'Méthodes/procédés de travail'},
+  {key:'cap7',label:'Qualité des systèmes d\'information'},
+  {key:'cap8',label:'Architecture organisationnelle'},
+  {key:'cap9',label:'Processus internes'},
+  {key:'cap10',label:'Technologie'},
+  {key:'cap11',label:'Immeubles'},
+];
+
+// ─────────────────────────────────────────────
+// PROFIL DATA (slides 9–13)
+// ─────────────────────────────────────────────
+const PROFILS={
+  'Excellence':{
+    strategie:'Vigie',hex:'#95c11f',bg:'#e8f5c0',textColor:'#3b6d11',
+    caracteristiques:['Performance élevée','Mobilisation élevée','Amélioration continue','Déploiement d\'énergie élevé','Danger de repli sur soi'],
+    stratMaitresse:'Surveillance constante et attentive pour détecter les fluctuations externes ou internes pouvant justifier des ajustements',
+    interventions:['Surveiller l\'environnement pour détecter les fluctuations significatives','Apporter des ajustements pour protéger l\'équilibre','Entretenir la culture existante (mentorat, travail d\'équipe)','Garder le personnel informé et vigilant par rapport aux pressions environnementales'],
+    pieges:['Lancer de multiples projets pour garder le personnel motivé','S\'engager dans des changements radicaux non justifiés','Laisser les nouveaux venus livrés à eux-mêmes','Protéger à tout prix le statu quo'],
+  },
+  'Équilibre':{
+    strategie:'Développement',hex:'#1d71b8',bg:'#d0e4f5',textColor:'#0c447c',
+    caracteristiques:['Performance satisfaisante','Propension à perpétuer le statu quo','Résultats intéressants moyennant une dépense d\'énergie raisonnable'],
+    stratMaitresse:'Ajout de compétences ou enrichissement de l\'offre de produits/services pour répondre aux besoins nouveaux ou faire mieux ce qu\'on fait déjà bien',
+    interventions:['Détecter les zones où l\'organisation tend à devenir moins performante','Continuer d\'améliorer sa capacité de réponse','Agir sur les variables associées aux «revenus» ou à l\'offre','Élargir ou remplacer des produits/services'],
+    pieges:['Cultiver le statu quo','Laisser s\'installer une culture de laisser-faire','Laisser s\'installer une mentalité de repli sur soi','Investir beaucoup d\'énergie dans les dynamiques internes'],
+  },
+  'Vulnérabilité':{
+    strategie:'Optimisation',hex:'#e8a020',bg:'#fff3cd',textColor:'#856404',
+    caracteristiques:['Performance mitigée, qualité des prestations inégale','Début de mécontentement de la clientèle','Augmentation des tensions dans les relations de travail','Perte de clients au profit des concurrents','Personnel qui exprime du mécontentement'],
+    stratMaitresse:'Le modèle à la base de l\'organisation est toujours approprié, mais des ajustements importants sont requis : façons de faire, procédés, mécanismes, processus',
+    interventions:['Revoir les pratiques et l\'utilisation des ressources','Contrôle des coûts et simplification des procédures','Révision de l\'organisation du travail','Mise à niveau de la technologie et des compétences','Impliquer le personnel — mode consultatif avec processus décisionnel rigoureux'],
+    pieges:['Se concentrer sur les irritants plutôt que sur le trio client-produit-service','Laisser les exigences du quotidien déclasser le plan d\'action','Travailler en mode consensuel (risque du plus petit dénominateur commun)','Se fier aux gens sans suivi pour mener le plan à terme','Se limiter à une rationalisation de l\'effectif'],
+  },
+  'Inertie/Tension':{
+    strategie:'Réinvention',hex:'#e07a5f',bg:'#fce8e3',textColor:'#993c1d',
+    caracteristiques:['Non-performance chronique (efficacité et productivité faibles)','Les gens y sont résignés (culture de complaisance)','On attribue la responsabilité à des facteurs externes','Personnel malheureux et désengagé','Tensions en sourdine, agitation souterraine'],
+    stratMaitresse:'Réaligner l\'organisation vers une nouvelle conception, de nouvelles pratiques professionnelles, un fonctionnement différent centré sur le service au client et la qualité',
+    interventions:['Petits pas et petits succès','Se concentrer sur client-produit-service','Petites situations, petits chantiers, petits groupes','Gestionnaires travaillent avec les petits groupes pour maintenir la concentration'],
+    pieges:['Se concentrer sur les dynamiques internes','Faire appel à des discussions de grand groupe','Rechercher des prises de décision collégiales','S\'engager dans de nombreux ou gros chantiers'],
+  },
+  'Crise':{
+    strategie:'Contraction/Sortie',hex:'#c0392b',bg:'#fde8e8',textColor:'#721c24',
+    caracteristiques:['La survie de l\'organisation est menacée','Les solutions internes ont été épuisées','Les gens sont agités, irrités, en colère','Les rapports de force sont intenses, tendus et polarisés'],
+    stratMaitresse:'Les choses sont à ce point dégradées qu\'il faut tout reprendre à zéro : se replier sur les activités maîtrisées ou fermer l\'organisation',
+    interventions:['Repositionner stratégiquement par rapport au marché','Abandonner les activités non liées à la mission','Adopter une approche directive, une autorité affirmée','Évaluer la sortie : liquidation, tutelle, fusion, sous-traitance'],
+    pieges:['Chercher le consensus','Essayer de rallier le plus grand nombre d\'adhérents','Entreprendre de nombreux chantiers d\'envergure','Attendre en espérant que les choses changent'],
+  },
+};
+
+// ─────────────────────────────────────────────
+// MATRICE (slide 8)
+// ─────────────────────────────────────────────
+// Row index = Performance avg band, Col index = Capacité avg band
+// Perf: ≥4.5=0, ≥3.5=1, ≥2.5=2, ≥1.5=3, else=4
+// Cap: ≥4.5=0, ≥3.5=1, ≥2.5=2, ≥1.5=3, else=4
+const MATRICE=[
+  ['Excellence','Équilibre','Vulnérabilité','Inertie/Tension','Crise'],
+  ['Équilibre','Équilibre','Vulnérabilité','Inertie/Tension','Crise'],
+  ['Vulnérabilité','Vulnérabilité','Vulnérabilité','Inertie/Tension','Crise'],
+  ['Inertie/Tension','Inertie/Tension','Inertie/Tension','Inertie/Tension','Crise'],
+  ['Crise','Crise','Crise','Crise','Crise'],
+];
+const PERF_BANDS=['Très élevée (≥4.5)','Élevée (3.5–4.4)','Moyenne (2.5–3.4)','Faible (1.5–2.4)','Très faible (1–1.4)'];
+const CAP_BANDS=['Totalement adéquate (≥4.5)','Plutôt adéquate (3.5–4.4)','Tout juste adéquate (2.5–3.4)','Peu adéquate (1.5–2.4)','Non adéquate (1–1.4)'];
+
+function bandIdx(v){if(v>=4.5)return 0;if(v>=3.5)return 1;if(v>=2.5)return 2;if(v>=1.5)return 3;return 4;}
+function getProfil(pa,ca){return MATRICE[bandIdx(pa)][bandIdx(ca)];}
+
+function matriceCssClass(name){
+  const m={'Excellence':'m-excellence','Équilibre':'m-equilibre','Vulnérabilité':'m-vulnerabilite','Inertie/Tension':'m-inertie','Crise':'m-crise'};
+  return m[name]||'';
+}
+
+// ─────────────────────────────────────────────
+// URL PARAMS
+// ─────────────────────────────────────────────
+const P=new URLSearchParams(window.location.search);
+const prenom=P.get('prenom')||'', nom=P.get('nom')||'';
+const pharmacie=P.get('pharmacie')||'', poste=P.get('poste')||'', dept=P.get('dept')||'', date=P.get('date')||'';
+const fullName=`${prenom} ${nom}`.trim();
+const hasData=fullName.length>0;
+
+const envAns=ENV_ITEMS.map(it=>({label:it.label,resp:P.get(it.key)||'',score:SCORE_MAP[P.get(it.key)]||0}));
+const perfAns=PERF_ITEMS.map(it=>({label:it.label,resp:P.get(it.key)||'',score:SCORE_MAP[P.get(it.key)]||0}));
+const capAns=CAP_ITEMS.map(it=>({label:it.label,resp:P.get(it.key)||'',score:SCORE_MAP[P.get(it.key)]||0}));
+
+const envAvg=avg(envAns.map(e=>e.score).filter(s=>s>0));
+const perfAvg=avg(perfAns.map(e=>e.score).filter(s=>s>0));
+const capAvg=avg(capAns.map(e=>e.score).filter(s=>s>0));
+const hasCap=capAns.some(e=>e.score>0);
+
+const profilName=hasCap?getProfil(perfAvg,capAvg):null;
+const profil=profilName?PROFILS[profilName]:null;
+
+const scoreEnvPct=parseFloat(P.get('scoreEnvPct')||0)||((envAvg/5)*100);
+const scorePerfPct=parseFloat(P.get('scorePerfPct')||0)||((perfAvg/5)*100);
+const scoreCapPct=parseFloat(P.get('scoreCapPct')||0)||(hasCap?(capAvg/5)*100:0);
+
+function avg(arr){if(!arr.length)return 0;return arr.reduce((a,b)=>a+b,0)/arr.length;}
+
+function formatDate(d){
+  if(!d)return'—';
+  const parts=d.replace(/\//g,'-').split('-');
+  if(parts.length!==3)return d;
+  const months=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  return`${parseInt(parts[2])} ${months[parseInt(parts[1])-1]} ${parts[0]}`;
+}
+
+function chipClass(s){return['','chip-1','chip-2','chip-3','chip-4','chip-5'][s]||'';}
+function fillClass(s){return s>=4?'fill-green':s>=3?'fill-amber':'fill-red';}
+
+function buildScoreRows(items){
+  return items.map(e=>`
+    <div class="score-row">
+      <div class="score-name">${e.label}</div>
+      <div class="score-track"><div class="score-fill ${fillClass(e.score)}" style="width:${(e.score/5)*100}%"></div></div>
+      <div class="score-num">${e.score||'—'}/5</div>
+      <div>${e.resp?`<span class="score-chip ${chipClass(e.score)}">${e.resp}</span>`:'—'}</div>
+    </div>`).join('');
+}
+
+function buildMatrice(pa, ca){
+  const ri=bandIdx(pa), ci=bandIdx(ca);
+  let html=`<table class="matrice-table">`;
+  // Header row
+  html+=`<tr><td class="corner">Performance org.<br>↓ &nbsp; Capacité réponse →</td>`;
+  CAP_BANDS.forEach(b=>html+=`<th class="col-hdr">${b}</th>`);
+  html+=`</tr>`;
+  // Data rows
+  MATRICE.forEach((row,r)=>{
+    html+=`<tr><td class="row-hdr">${PERF_BANDS[r]}</td>`;
+    row.forEach((cell,c)=>{
+      const isActive=(r===ri&&c===ci);
+      html+=`<td class="${matriceCssClass(cell)}${isActive?' active-cell':''}">${cell}${isActive?' ★':''}</td>`;
+    });
+    html+=`</tr>`;
+  });
+  html+=`</table>`;
+  return html;
+}
+
+// ─────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  const root=document.getElementById('root');
+
+  if(!hasData){
+    root.innerHTML=`<div class="no-params"><h2>Aucune donnée</h2><p>Cette page doit être accédée via la redirection du sondage Zoho Survey après l'avoir complété.</p></div>`;
+    return;
+  }
+
+  const profilBg=profil?profil.bg:'#f5f7fa';
+  const profilHex=profil?profil.hex:'#002169';
+  const profilText=profil?profil.textColor:'#002169';
+
+  root.innerHTML=`
+    <div class="page">
+
+      <!-- HEADER -->
+      <div class="header">
+        <span class="eyebrow">Formation Pratique en Gestion · Module 2</span>
+        <h1>La conjoncture externe<br><em style="font-weight:400;font-style:italic;font-size:.75em;color:var(--ink-soft)">de l'organisation</em></h1>
+        <div class="participant-line"><strong>${fullName}</strong>${poste?` · ${poste}`:''}${pharmacie?` · ${pharmacie}`:''}${date?` · ${formatDate(date)}`:''}${dept?` · ${dept}`:''}</div>
+        <div class="divider"></div>
+      </div>
+
+      <!-- SUMMARY SCORES -->
+      <div class="summary-row">
+        <div class="summary-card sc1">
+          <div class="sc-label">Conjoncture externe</div>
+          <div class="sc-val" style="color:var(--ink)">${scoreEnvPct.toFixed(1)}%</div>
+          <div class="sc-sub">Moy. ${envAvg.toFixed(2)}/5 — 11 facteurs</div>
+        </div>
+        <div class="summary-card sc2">
+          <div class="sc-label">Performance org.</div>
+          <div class="sc-val" style="color:var(--blue)">${scorePerfPct.toFixed(1)}%</div>
+          <div class="sc-sub">Moy. ${perfAvg.toFixed(2)}/5 — 3 indicateurs</div>
+        </div>
+        <div class="summary-card sc3">
+          <div class="sc-label">Capacité de réponse</div>
+          <div class="sc-val" style="color:var(--teal)">${hasCap?scoreCapPct.toFixed(1)+'%':'N/A'}</div>
+          <div class="sc-sub">${hasCap?`Moy. ${capAvg.toFixed(2)}/5 — 11 indicateurs`:'Section non complétée'}</div>
+        </div>
+      </div>
+
+      <!-- PROFIL CARD -->
+      ${profil?`
+      <div class="profil-card" style="background:${profilBg};border-color:${profilHex}33;">
+        <div class="profil-eyebrow" style="color:${profilText}">Votre profil organisationnel</div>
+        <div class="profil-name" style="color:${profilText}">${profilName}</div>
+        <div class="profil-strat" style="color:${profilText}">Stratégie maîtresse : ${profil.strategie}</div>
+        <div class="profil-grid">
+          <div class="profil-col">
+            <h4 style="color:${profilText}">Caractéristiques distinctives</h4>
+            <ul>${profil.caracteristiques.map(c=>`<li style="color:${profilText}">${c}</li>`).join('')}</ul>
+          </div>
+          <div class="profil-col">
+            <h4 style="color:${profilText}">Interventions adaptées</h4>
+            <ul>${profil.interventions.map(c=>`<li style="color:${profilText}">${c}</li>`).join('')}</ul>
+          </div>
+          <div class="profil-col" style="margin-top:12px">
+            <h4 style="color:${profilText}">Stratégie maîtresse</h4>
+            <p style="font-size:12px;line-height:1.6;color:${profilText}">${profil.stratMaitresse}</p>
+          </div>
+          <div class="profil-col" style="margin-top:12px">
+            <h4 style="color:${profilText}">Pièges à éviter</h4>
+            <ul>${profil.pieges.map(c=>`<li style="color:${profilText}">${c}</li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>` : `<div class="card"><p style="font-size:13px;color:var(--ink-soft)">Le profil organisationnel ne peut être calculé que si la section Capacité de réponse a été complétée.</p></div>`}
+
+      <!-- MATRICE (slide 8) -->
+      ${hasCap?`
+      <div class="matrice-card">
+        <h3>Votre position dans la matrice des profils</h3>
+        <p class="matrice-sub">Croisement Performance de l'organisation (axe vertical) × Capacité de réponse (axe horizontal) · Source : Collerette, Lauzier, Schneider, 2021</p>
+        <div class="matrice-wrap">${buildMatrice(perfAvg,capAvg)}</div>
+      </div>`:''} 
+
+      <!-- ENV SCORES -->
+      <div class="card">
+        <div class="card-title">Section 1 — Conjoncture externe : effets des tendances dans l'environnement</div>
+        ${buildScoreRows(envAns)}
+      </div>
+
+      <!-- PERF SCORES -->
+      <div class="card">
+        <div class="card-title">Section 2 — Performance de l'organisation</div>
+        ${buildScoreRows(perfAns)}
+      </div>
+
+      <!-- CAP SCORES -->
+      ${hasCap?`
+      <div class="card">
+        <div class="card-title">Section 3 — Capacité de réponse de l'organisation</div>
+        ${buildScoreRows(capAns)}
+      </div>`:''}
+
+      <!-- RADAR -->
+      <div class="radar-card">
+        <div class="radar-wrap">
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
+
+      <!-- LEGEND -->
+      <div class="legend-card">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px">Guide de lecture</div>
+        <div class="legend-row">
+          <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div><span class="score-chip chip-1">Très défavorable / Très faible / Non adéquate (1)</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e07a5f"></div><span class="score-chip chip-2">Défavorable / Faible / Peu adéquate (2)</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e8a020"></div><span class="score-chip chip-3">Neutre / Moyenne / Tout juste adéquate (3)</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#1d71b8"></div><span class="score-chip chip-4">Favorable / Élevée / Adéquate (4)</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#95c11f"></div><span class="score-chip chip-5">Très favorable / Très élevée / Très adéquate (5)</span></div>
+        </div>
+      </div>
+
+      <div class="footer">
+        Séminaire Gestion de la Transformation · STEM Experts · Module 2
+        <div class="ref">Collerette, P., Lauzier, M., Schneider, R. — <em>Le pilotage du changement</em>, Presses de l'Université du Québec, 3e éd., 2021</div>
+      </div>
+    </div>
+  `;
+
+  // Build radar
+  const radarLabels=[
+    'Compos. clientèle','Opinion clientèle',"Main-d'œuvre",'Concurrence','Orgs. syndicales',
+    'Accès capital','Instances gouv.','Légis./Réglements','Médias & pression','Courants pensée','Évol. techno.',
+    'Résultats obtenus','Efficience','Perception clientèle',
+    ...(hasCap?CAP_ITEMS.map(i=>i.label.substring(0,18)):[])
+  ];
+  const radarData=[...envAns.map(e=>e.score),...perfAns.map(e=>e.score),...(hasCap?capAns.map(e=>e.score):[])];
+
+  new Chart(document.getElementById('radarChart').getContext('2d'),{
+    type:'radar',
+    data:{
+      labels:radarLabels,
+      datasets:[{
+        label:fullName,
+        data:radarData,
+        backgroundColor:'rgba(0,33,105,0.08)',
+        borderColor:'#002169',
+        borderWidth:2,
+        pointBackgroundColor:radarData.map(v=>v>=4?'#95c11f':v>=3?'#e8a020':'#c0392b'),
+        pointRadius:5,
+      }]
+    },
+    options:{
+      responsive:true,
+      scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{family:'DM Sans',size:9},backdropColor:'transparent'},grid:{color:'rgba(0,33,105,0.08)'},pointLabels:{font:{family:'DM Sans',size:9},color:'#002169'}}},
+      plugins:{legend:{display:false}}
+    }
+  });
+});
+</script>
+</body>
+</html>
