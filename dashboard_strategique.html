@@ -206,15 +206,13 @@ tr:hover td{background:#f8f9fc;}
 
 <script>
 // ─── CONFIGURATION ───
-// Lien corrigé pour l'API (published au lieu de publishedsheet)
-const ZOHO_URL = 'https://sheet.zoho.com/sheet/published/5daa2a335fe532709e5a2cb52fb6be78c8d9d0d09adc9b5ff236cf0fae4b7856?download=csv';
+const ZOHO_URL = 'https://sheet.zoho.com/sheet/publishedsheet/5daa2a335fe532709e5a2cb52fb6be78c8d9d0d09adc9b5ff236cf0fae4b7856?type=grid&download=csv';
 const RESULT_PAGE_URL = 'https://stemexperts.github.io/seminaire-professionnel-gestion-transformation-module2/resultats_strategique.html';
 
-// Boucle de proxies avec Cache-Busting propre
 const PROXIES = [
-  url => 'https://corsproxy.io/?url=' + encodeURIComponent(url + '&t=' + Date.now()),
-  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url + '&t=' + Date.now()),
-  url => 'https://thingproxy.freeboard.io/fetch/' + url + '&t=' + Date.now()
+  u => 'https://api.allorigins.win/raw?url='       + encodeURIComponent(u),
+  u => 'https://corsproxy.io/?url='                + encodeURIComponent(u),
+  u => 'https://thingproxy.freeboard.io/fetch/'    + u
 ];
 
 const VARIABLES = [
@@ -252,14 +250,12 @@ function getProfile(avg){
 const YEAR_COLORS = ["#002169","#0090ac","#95c11f","#e8a020","#e07a5f"];
 
 // Fonction pour récupérer la date de Montréal au format YYYY-MM-DD
-function todayISO(){
+function todayISO(){ 
   const d = new Date();
-  // Utilisation de l'heure locale de l'ordinateur pour éviter le décalage UTC
   return d.getFullYear() + '-' + 
          String(d.getMonth() + 1).padStart(2, '0') + '-' + 
          String(d.getDate()).padStart(2, '0');
 }
-
 function dateToISO(s){
   if(!s) return null; s=String(s).trim();
   const iso=s.match(/(\d{4}-\d{2}-\d{2})/); if(iso) return iso[1];
