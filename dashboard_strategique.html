@@ -343,6 +343,18 @@ function buildMatrix(rows){
   function scoreToX(avg){
     return LABEL_W + (4.5 - Math.max(0, Math.min(4, avg))) * COL_W;
   }
+  function varLabel(v, x, cy){
+    const maxChars = Math.floor((LABEL_W - 12) / 5.8);
+    if(v.length <= maxChars)
+      return `<text x="${x}" y="${cy+4}" font-size="10" font-weight="500" fill="#002169">${v}</text>`;
+    const words = v.split(' ');
+    let l1='', l2='';
+    for(let i=0; i<words.length; i++){
+      if((l1+' '+words[i]).trim().length <= maxChars) l1=(l1+' '+words[i]).trim();
+      else{ l2=words.slice(i).join(' '); break; }
+    }
+    return `<text font-size="9.5" font-weight="500" fill="#002169"><tspan x="${x}" y="${cy-3}">${l1}</tspan><tspan x="${x}" y="${cy+9}">${l2}</tspan></text>`;
+  }
 
   let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="font-family:'DM Sans',sans-serif;">`;
 
@@ -385,7 +397,7 @@ function buildMatrix(rows){
   // Variable row labels + dots for each year
   VARIABLES.forEach((v,i)=>{
     const cy=HDR_H+i*ROW_H+ROW_H/2;
-    svg+=`<text x="6" y="${cy+4}" font-size="10" font-weight="500" fill="#002169" textLength="${LABEL_W-10}" lengthAdjust="spacingAndGlyphs">${v}</text>`;
+    svg+=varLabel(v, 6, cy);
     // dots for all possible score positions
     PROFILES.forEach((_,c)=>{
       const cx=LABEL_W+c*COL_W+COL_W/2;
@@ -442,6 +454,7 @@ function renderDashboard(rows){
   const globalAvg=parseFloat((varAverages.reduce((a,b)=>a+b.avg,0)/varAverages.length).toFixed(2));
   const profile=getProfile(globalAvg);
 
+  window._dashParticipants = [];
   const participants=rows.map((r,idx)=>{
     const scores=SCORE_COLS.map(c=>parseFloat(r[c])).map(v=>isNaN(v)?0:v);
     const avg=parseFloat((scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2));
@@ -455,9 +468,10 @@ function renderDashboard(rows){
       +LABEL_COLS.map((c,i)=>'&l'+(i+1)+'='+encodeURIComponent(r[c]||'')).join('');
     return {nom:((r["Prénom"]||'')+' '+(r["Nom"]||'')).trim(),pharmacie:r["Pharmacie"]||'—',poste:r["Poste"]||'—',avg,profile:getProfile(avg),resultURL};
   });
+  window._dashParticipants = participants;
 
   const pct=globalAvg/4, r2=44, circ=2*Math.PI*r2;
-  const ringHTML=`<svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.bg}" stroke-width="10"/><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.hex}" stroke-width="10" stroke-dasharray="${pct*circ} ${circ}" stroke-linecap="round" transform="rotate(-90 55 55)"/></svg><div class="ring-inner"><span class="ring-num" style="color:${profile.hex}">${globalAvg}</span><span class="ring-denom">/ 4 · ${Math.round(pct*100)}%</span></div>`;
+  const ringHTML=`<svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.bg}" stroke-width="10"/><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.hex}" stroke-width="10" stroke-dasharray="${pct*circ} ${circ}" stroke-linecap="round" transform="rotate(-90 55 55)"/></svg><div class="ring-inner"><span class="ring-num" style="color:${profile.hex}">${Math.round(pct*100)}%</span><span class="ring-denom">/ 4.0</span></div>`;
 
   const mid=Math.ceil(varAverages.length/2);
   function varHTML(v){
@@ -489,17 +503,16 @@ function renderDashboard(rows){
 
   const html=`
     <div class="kpi-row">
-      <div class="kpi k1"><div class="kpi-label">Score moyen global</div><div class="kpi-val" style="color:${profile.hex}">${globalAvg}</div><div class="kpi-sub">sur 4.0 · ${Math.round(globalAvg/4*100)}%</div></div>
-      <div class="kpi k2"><div class="kpi-label">Participants</div><div class="kpi-val">${n}</div><div class="kpi-sub">réponses complètes</div></div>
-      <div class="kpi k3"><div class="kpi-label">Profil dominant</div><div class="kpi-val" style="font-size:18px;margin-top:6px;color:${profile.hex}">${profile.name}</div><div class="kpi-sub">${profile.strategie}</div></div>
-      <div class="kpi k4"><div class="kpi-label">Année de référence</div><div class="kpi-val">${year}</div><div class="kpi-sub">première mesure</div></div>
+      <div class="kpi k1"><div class="kpi-label">Score moyen global</div><div class="kpi-val" style="color:${profile.hex}">${globalAvg}<span style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:400;color:#aaa;margin-left:6px;">/ 4</span></div><div class="kpi-sub">sur 4.0</div></div>
+      <div class="kpi k2"><div class="kpi-label">Résultat du groupe</div><div class="kpi-val" style="color:${profile.hex}">${Math.round(globalAvg/4*100)}%</div><div class="kpi-sub">${n} participant${n>1?'s':''}</div></div>
+      <div class="kpi k3"><div class="kpi-label">Profil dominant</div><div class="kpi-val" style="font-size:18px;margin-top:6px;color:${profile.hex}">${profile.name}</div><div class="kpi-sub">&nbsp;</div></div>
+      <div class="kpi k4"><div class="kpi-label">Stratégie recommandée</div><div class="kpi-val" style="font-size:18px;margin-top:6px;color:${profile.hex}">${profile.strategie}</div><div class="kpi-sub">&nbsp;</div></div>
     </div>
 
     <div class="profil-card">
       <div class="profil-ring">${ringHTML}</div>
       <div class="profil-details">
         <div class="profil-badge" style="background:${profile.hex}">${profile.name}</div>
-        <div class="profil-name">Stratégie recommandée : ${profile.strategie}</div>
         <div class="profil-desc">${profile.desc||''}</div>
       </div>
     </div>
@@ -518,14 +531,14 @@ function renderDashboard(rows){
     <div class="section-header"><h2>Répartition des profils organisationnels</h2><p>Distribution du groupe</p></div>
     <div class="card" style="padding:20px;margin-bottom:24px;">${distHTML}</div>
 
-    <div class="section-header"><h2>Profil collectif — Radar</h2><p>Moyenne des 12 variables organisationnelles</p></div>
-    <div class="radar-card"><canvas id="radarChart" width="420" height="420"></canvas></div>
-
     <div class="section-header"><h2>Matrice des dynamiques organisationnelles</h2><p>Les indicateurs reliés par année selon le profil dominant</p></div>
     <div class="matrix-wrap">
       <div class="matrix-svg-wrap">${matrixSVG}</div>
       ${matYears.length>0?`<div class="legende-row" style="margin-top:14px;margin-bottom:0">${yearLegend}</div>`:''}
     </div>
+
+    <div class="section-header"><h2>Profil collectif — Radar</h2><p>Moyenne des 12 variables organisationnelles</p></div>
+    <div class="radar-card"><canvas id="radarChart" width="420" height="420"></canvas></div>
 
     <div class="section-header"><h2>Résultats par variable</h2></div>
     <div class="grid-2">
@@ -533,19 +546,18 @@ function renderDashboard(rows){
       <div class="card" style="padding:20px">${varAverages.slice(mid).map(varHTML).join('')}</div>
     </div>
 
-    <div class="section-header"><h2>Résultats par participant</h2></div>
+    <div class="section-header"><h2>Résultats par participant</h2><p>Sélectionnez un participant</p></div>
     <div class="table-card">
-      <div class="table-top"><input class="table-search" type="text" placeholder="Rechercher un nom, une pharmacie…" oninput="filterTable(this.value)"/></div>
-      <table><thead><tr><th>Participant</th><th>Pharmacie</th><th>Poste</th><th>Score</th><th>Profil</th><th>Stratégie</th><th>Fiche</th></tr></thead>
-      <tbody id="tableBody">
-        ${participants.map(p=>`<tr>
-          <td>${p.nom||'—'}</td><td>${p.pharmacie}</td><td>${p.poste}</td>
-          <td style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:${p.profile.hex}">${p.avg}<span style="font-size:10px;font-weight:400;color:#888;margin-left:3px;">(${Math.round(p.avg/4*100)}%)</span></td>
-          <td><span class="badge" style="background:${p.profile.hex}">${p.profile.name}</span></td>
-          <td><span class="strat-tag" style="background:${p.profile.bg};color:${p.profile.hex}">${p.profile.strategie}</span></td>
-          <td class="td-link"><a href="${p.resultURL}">Voir →</a></td>
-        </tr>`).join('')}
-      </tbody></table>
+      <div class="table-top">
+        <select class="table-search" id="participantSelect" onchange="showParticipant()" style="cursor:pointer;appearance:auto;min-width:300px;">
+          <option value="">— Sélectionner un participant —</option>
+          ${participants.map((p,i)=>`<option value="${i}">${p.nom}${p.pharmacie!=='—'?' — '+p.pharmacie:''}</option>`).join('')}
+        </select>
+      </div>
+      <table id="participantTable" style="display:none">
+        <thead><tr><th>Participant</th><th>Pharmacie</th><th>Poste</th><th>Score /4</th><th>%</th><th>Profil</th><th>Stratégie</th><th>Résultats</th></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
     </div>`;
 
   document.getElementById('loadingState').style.display='none';
@@ -553,17 +565,52 @@ function renderDashboard(rows){
   document.getElementById('main-content').style.display='block';
 
   if(radarChart) radarChart.destroy();
-  const ptColors=varAverages.map(v=>getProfile(v.avg).hex);
   radarChart=new Chart(document.getElementById('radarChart').getContext('2d'),{
     type:'radar',
-    data:{labels:VARIABLES.map(v=>v.length>16?v.substring(0,15)+'…':v),datasets:[{data:varAverages.map(v=>v.avg),backgroundColor:profile.hex+'22',borderColor:profile.hex,borderWidth:2,pointBackgroundColor:ptColors,pointBorderColor:ptColors,pointRadius:6}]},
-    options:{responsive:false,scales:{r:{min:0,max:4,ticks:{stepSize:1,font:{size:10},color:'#888',backdropColor:'transparent'},grid:{color:'rgba(0,33,105,0.08)'},pointLabels:{font:{size:10,family:"'DM Sans'"},color:'#002169'}}},plugins:{legend:{display:false}}}
+    data:{
+      labels:VARIABLES.map(v=>v.length>16?v.substring(0,15)+'…':v),
+      datasets:[
+        // Zone Excellence (3.5–4)
+        {data:Array(12).fill(4),backgroundColor:'rgba(149,193,31,0.13)',borderWidth:0,pointRadius:0,fill:true},
+        // Zone Équilibre (2.75–3.5)
+        {data:Array(12).fill(3.5),backgroundColor:'rgba(29,113,184,0.13)',borderWidth:0,pointRadius:0,fill:true},
+        // Zone Vulnérabilité (2–2.75)
+        {data:Array(12).fill(2.75),backgroundColor:'rgba(232,160,32,0.15)',borderWidth:0,pointRadius:0,fill:true},
+        // Zone Inertie/Tension (1–2)
+        {data:Array(12).fill(2),backgroundColor:'rgba(224,122,95,0.15)',borderWidth:0,pointRadius:0,fill:true},
+        // Zone Crise (0–1)
+        {data:Array(12).fill(1),backgroundColor:'rgba(192,57,43,0.15)',borderWidth:0,pointRadius:0,fill:true},
+        // Données réelles
+        {data:varAverages.map(v=>v.avg),backgroundColor:profile.hex+'33',borderColor:profile.hex,borderWidth:2.5,pointBackgroundColor:profile.hex,pointBorderColor:'white',pointBorderWidth:2,pointRadius:6}
+      ]
+    },
+    options:{
+      responsive:false,
+      scales:{r:{min:0,max:4,ticks:{stepSize:1,font:{size:10},color:'#888',backdropColor:'transparent'},grid:{color:'rgba(0,33,105,0.08)'},pointLabels:{font:{size:10,family:"'DM Sans'"},color:'#002169'}}},
+      plugins:{legend:{display:false}}
+    }
   });
 }
 
-function filterTable(val){
-  const q=val.toLowerCase();
-  document.querySelectorAll('#tableBody tr').forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none';});
+function showParticipant(){
+  const sel = document.getElementById('participantSelect');
+  const tbl = document.getElementById('participantTable');
+  const tbody = document.getElementById('tableBody');
+  if(!sel || !tbl || !tbody) return;
+  tbl.style.display = sel.value ? '' : 'none';
+  if(!sel.value) return;
+  const p = (window._dashParticipants||[])[parseInt(sel.value)];
+  if(!p) return;
+  tbody.innerHTML = `<tr>
+    <td><strong>${p.nom||'—'}</strong></td>
+    <td>${p.pharmacie}</td>
+    <td>${p.poste}</td>
+    <td style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:${p.profile.hex}">${p.avg}</td>
+    <td style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:${p.profile.hex}">${Math.round(p.avg/4*100)}%</td>
+    <td><span class="badge" style="background:${p.profile.hex}">${p.profile.name}</span></td>
+    <td><span class="strat-tag" style="background:${p.profile.bg};color:${p.profile.hex}">${p.profile.strategie}</span></td>
+    <td class="td-link"><a href="${p.resultURL}" target="_blank">Voir résultats ↗</a></td>
+  </tr>`;
 }
 
 async function loadData() {
