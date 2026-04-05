@@ -96,7 +96,7 @@ tr:hover td{background:var(--cream);}
 .bp-nd{background:var(--cream-dark);color:var(--ink-soft);}
 
 #participantSelect{border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--cream);outline:none;min-width:220px;}
-#individualTableWrapper{display:none;}
+
 
 .loading-state{text-align:center;padding:80px 20px;font-size:15px;color:#888;}
 .loader{width:36px;height:36px;border:3px solid var(--cream-dark);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;}
@@ -265,8 +265,8 @@ tr:hover td{background:var(--cream);}
       <h2>Résultats individuels</h2>
       <span>Sélectionnez un participant pour voir sa fiche</span>
     </div>
-    <div class="table-card">
-      <div class="table-top" style="margin-bottom:16px;">
+    <div class="table-card" style="padding-top:16px;">
+      <div class="table-top" style="margin-bottom:16px;padding:0 24px;">
         <select class="table-search" id="participantSelect" onchange="showIndividual()" style="cursor:pointer;min-width:280px;">
           <option value="">— Sélectionner un participant —</option>
         </select>
@@ -285,18 +285,6 @@ tr:hover td{background:var(--cream);}
       </div>
     </div>
 
-    <div id="individualTableWrapper" class="table-card" style="display:none;margin-top:16px;">
-      <div class="table-card-header">
-        <h3 id="individualTitle">—</h3>
-        <a id="individualLink" href="#" target="_blank" class="btn btn-teal" style="font-size:12px;padding:7px 16px;text-decoration:none;">&#8599; Voir page participant</a>
-      </div>
-      <div class="table-responsive">
-        <table>
-          <thead><tr><th>Section</th><th>Indicateur</th><th>Réponse</th><th>Score /5</th></tr></thead>
-          <tbody id="individualBody"></tbody>
-        </table>
-      </div>
-    </div>
   </div>
 
   <!-- PLAN B -->
@@ -626,7 +614,6 @@ function render(){
     tbody.appendChild(tr);
     const opt=document.createElement('option');opt.value=i;opt.textContent=name;sel.appendChild(opt);
   });
-  document.getElementById('individualTableWrapper').style.display='none';
   document.getElementById('participantsTableWrap').style.display='none';
   document.getElementById('participantSelect').value='';
 }
@@ -678,14 +665,12 @@ function buildProfilMatrix(groupPa, groupCa){
 function showIndividual(){
   const val = document.getElementById('participantSelect').value;
   const tableWrap = document.getElementById('participantsTableWrap');
-  const detailWrap = document.getElementById('individualTableWrapper');
   const tbody = document.getElementById('participantsTableBody');
   const enriched = window._enriched || [];
 
   // Rien sélectionné — tout cacher
   if(!val){
     if(tableWrap) tableWrap.style.display = 'none';
-    if(detailWrap) detailWrap.style.display = 'none';
     return;
   }
 
@@ -713,42 +698,6 @@ function showIndividual(){
   }
   if(tableWrap) tableWrap.style.display = toShow.length ? '' : 'none';
 
-  // Détail question par question (seulement pour un participant individuel)
-  if(val !== '__tous__'){
-    const e = enriched[parseInt(val)];
-    if(e && detailWrap){
-      const name = `${e['Prénom']||''} ${e['Nom']||''}`.trim();
-      const titleEl = document.getElementById('individualTitle');
-      const linkEl  = document.getElementById('individualLink');
-      if(titleEl) titleEl.textContent = 'Détail — ' + name;
-      if(linkEl)  linkEl.href = buildLink(e);
-      const ibody = document.getElementById('individualBody');
-      if(ibody){
-        ibody.innerHTML = '';
-        ENV_KEYS.forEach((k,i)=>{
-          const rep=e[k]||'—'; const s=SCORE_MAP[rep]||'—';
-          const tr=document.createElement('tr');
-          tr.innerHTML=`<td>Conjoncture externe</td><td>${ENV_SHORT[i]}</td><td>${rep}</td><td>${s}/5</td>`;
-          ibody.appendChild(tr);
-        });
-        PERF_KEYS.forEach((k,i)=>{
-          const rep=e[k]||'—'; const s=SCORE_MAP[rep]||'—';
-          const tr=document.createElement('tr');
-          tr.innerHTML=`<td>Performance</td><td>${PERF_FULL[i]}</td><td>${rep}</td><td>${s}/5</td>`;
-          ibody.appendChild(tr);
-        });
-        CAP_KEYS.forEach((k,i)=>{
-          const rep=e[k]||'—'; const s=SCORE_MAP[rep]||'—';
-          const tr=document.createElement('tr');
-          tr.innerHTML=`<td>Capacité de réponse</td><td>${CAP_FULL[i]}</td><td>${s||'N/A'}</td><td>${s||'N/A'}</td>`;
-          ibody.appendChild(tr);
-        });
-      }
-      detailWrap.style.display = 'block';
-    }
-  } else {
-    if(detailWrap) detailWrap.style.display = 'none';
-  }
 }
 
 function buildLink(e){
