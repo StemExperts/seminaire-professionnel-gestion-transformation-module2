@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mes résultats — La conjoncture externe</title>
+<title>Mes résultats | La conjoncture externe</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -225,7 +225,7 @@ const MATRICE=[
   ['Crise','Crise','Crise','Crise','Crise'],
 ];
 const PERF_BANDS=['Très élevée (≥4.5)','Élevée (3.5–4.4)','Moyenne (2.5–3.4)','Faible (1.5–2.4)','Très faible (1–1.4)'];
-const CAP_BANDS=['Totalement adéquate (≥4.5)','Plutôt adéquate (3.5–4.4)','Tout juste adéquate (2.5–3.4)','Peu adéquate (1.5–2.4)','Non adéquate (1–1.4)'];
+const CAP_BANDS=['Totalement adéquate<br> (≥4.5)','Plutôt adéquate<br> (3.5–4.4)','Tout juste adéquate<br> (2.5–3.4)','Peu adéquate<br> (1.5–2.4)','Non adéquate<br> (1–1.4)'];
 
 function bandIdx(v){if(v>=4.5)return 0;if(v>=3.5)return 1;if(v>=2.5)return 2;if(v>=1.5)return 3;return 4;}
 function getProfil(pa,ca){return MATRICE[bandIdx(pa)][bandIdx(ca)];}
