@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Tableau de bord — Variables d'une analyse stratégique</title>
+<title>Tableau de bord | Variables d'une analyse stratégique</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -171,7 +171,7 @@ tr:hover td{background:#f8f9fc;}
 
 <div class="emergency-wrap">
   <div class="emergency-card">
-    <div class="emergency-title">⚡ Plan B — Chargement manuel du CSV</div>
+    <div class="emergency-title">⚡ Plan B - Chargement manuel du CSV</div>
     <div class="emergency-subtitle">Si le rafraîchissement automatique ne fonctionne pas, suivez ces 2 étapes</div>
     <div class="emergency-steps">
       <div class="estep">
@@ -471,7 +471,7 @@ function renderDashboard(rows){
   window._dashParticipants = participants;
 
   const pct=globalAvg/4, r2=44, circ=2*Math.PI*r2;
-  const ringHTML=`<svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.bg}" stroke-width="10"/><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.hex}" stroke-width="10" stroke-dasharray="${pct*circ} ${circ}" stroke-linecap="round" transform="rotate(-90 55 55)"/></svg><div class="ring-inner"><span class="ring-num" style="color:${profile.hex}">${Math.round(pct*100)}%</span><span class="ring-denom">/ 4.0</span></div>`;
+  const ringHTML=`<svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.bg}" stroke-width="10"/><circle cx="55" cy="55" r="${r2}" fill="none" stroke="${profile.hex}" stroke-width="10" stroke-dasharray="${pct*circ} ${circ}" stroke-linecap="round" transform="rotate(-90 55 55)"/></svg><div class="ring-inner"><span class="ring-num" style="color:${profile.hex}">${Math.round(pct*100)}%</span><span class="ring-denom"></span></div>`;
 
   const mid=Math.ceil(varAverages.length/2);
   function varHTML(v){
@@ -517,16 +517,6 @@ function renderDashboard(rows){
       </div>
     </div>
 
-    <div class="echelle-card">
-      <div class="echelle-title">Échelle de référence</div>
-      <div class="echelle-items-big">
-        <span class="echelle-item-big"><span class="echelle-dot-big" style="background:#95c11f"></span><span class="echelle-score-big">4</span> — Excellence · Vigie</span>
-        <span class="echelle-item-big"><span class="echelle-dot-big" style="background:#1d71b8"></span><span class="echelle-score-big">3</span> — Équilibre · Développement</span>
-        <span class="echelle-item-big"><span class="echelle-dot-big" style="background:#e8a020"></span><span class="echelle-score-big">2</span> — Vulnérabilité · Optimisation</span>
-        <span class="echelle-item-big"><span class="echelle-dot-big" style="background:#e07a5f"></span><span class="echelle-score-big">1</span> — Inertie/Tension · Réinvention</span>
-        <span class="echelle-item-big"><span class="echelle-dot-big" style="background:#c0392b"></span><span class="echelle-score-big">0</span> — Crise · Contraction/Sortie</span>
-      </div>
-    </div>
 
     <div class="section-header"><h2>Répartition des profils organisationnels</h2><p>Distribution du groupe</p></div>
     <div class="card" style="padding:20px;margin-bottom:24px;">${distHTML}</div>
@@ -537,7 +527,7 @@ function renderDashboard(rows){
       ${matYears.length>0?`<div class="legende-row" style="margin-top:14px;margin-bottom:0">${yearLegend}</div>`:''}
     </div>
 
-    <div class="section-header"><h2>Profil collectif — Radar</h2><p>Moyenne des 12 variables organisationnelles</p></div>
+    <div class="section-header"><h2>Profil collectif | Radar</h2><p>Moyenne des 12 variables organisationnelles</p></div>
     <div class="radar-card"><canvas id="radarChart" width="420" height="420"></canvas></div>
 
     <div class="section-header"><h2>Résultats par variable</h2></div>
