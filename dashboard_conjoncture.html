@@ -203,7 +203,7 @@ tr:hover td{background:var(--cream);}
   <div class="data-section" id="profilSection">
     <div class="section-header">
       <h2>Distribution des profils organisationnels</h2>
-      <span>Croisement Performance × Capacité de réponse (slide 8)</span>
+      <span>Croisement Performance × Capacité de réponse</span>
     </div>
     <div class="chart-row">
       <div class="chart-card">
@@ -293,7 +293,7 @@ tr:hover td{background:var(--cream);}
 
 <div class="emergency-wrap">
   <div class="emergency-card">
-    <div class="emergency-title">⚡ Plan B — Chargement manuel du CSV</div>
+    <div class="emergency-title">⚡ Plan B - Chargement manuel du CSV</div>
     <div class="emergency-subtitle">Si le rafraîchissement automatique ne fonctionne pas, suivez ces 2 étapes</div>
     <div class="emergency-steps">
 
@@ -333,7 +333,7 @@ tr:hover td{background:var(--cream);}
 </div>
 
 <footer class="footer">
-  Dashboard — La conjoncture externe · STEM Experts · Séminaire Gestion de la Transformation · Module 2
+  La conjoncture externe · STEM Experts · Séminaire Gestion de la Transformation · Module 2
 </footer>
 
 <script>
@@ -655,7 +655,7 @@ function buildProfilMatrix(groupPa, groupCa){
     const profil = getProfil(groupPa, groupCa);
     const meta = PROFIL_META[profil] || {hex:'#aaa', bg:'#f5f5f5'};
     html += `<div style="margin-top:10px;font-size:12px;color:#666;">
-      ★ Position du groupe — Performance : <strong>${groupPa.toFixed(2)}</strong>/5 · Capacité de réponse : <strong>${groupCa.toFixed(2)}</strong>/5
+      ★ Position du groupe - Performance : <strong>${groupPa.toFixed(2)}</strong>/5 · Capacité de réponse : <strong>${groupCa.toFixed(2)}</strong>/5
       &nbsp;→&nbsp;<span style="font-weight:700;color:${meta.hex}">${profil}</span>
     </div>`;
   }
