@@ -122,7 +122,7 @@ const PROFILES=[
   {name:"Excellence",hex:"#95c11f",bg:"#e8f5c0",col:0,min:3.5,max:5,strategie:"Vigie"},
   {name:"Équilibre",hex:"#1d71b8",bg:"#d0e4f5",col:1,min:2.75,max:3.5,strategie:"Développement"},
   {name:"Vulnérabilité",hex:"#e8a020",bg:"#fde8cc",col:2,min:2.0,max:2.75,strategie:"Optimisation"},
-  {name:"Inertie/Tension",hex:"#e07a5f",bg:"#ffed00",col:3,min:1.0,max:2.0,strategie:"Réinvention"},
+  {name:"Inertie/Tension",hex:"#e07a5f",bg:"#fcefc2",col:3,min:1.0,max:2.0,strategie:"Réinvention"},
   {name:"Crise",hex:"#c0392b",bg:"#fde8e8",col:4,min:0,max:1.0,strategie:"Contraction/Sortie"},
 ];
 
@@ -370,7 +370,7 @@ function buildMatrix(scores, year, prof){
   const fy = HDR_H + ROW_H*VARIABLES.length + (TFOOT_H/2); // footer center Y
   const profileNames=["Excellence (4)","Équilibre (3)","Vulnérabilité (2)","Inertie/Tension (1)","Crise (0)"];
   const profileHex=["#95c11f","#1d71b8","#e8a020","#e07a5f","#c0392b"];
-  const profileBg=["#e8f5c0","#d0e4f5","#fde8cc","#ffed00","#fde8e8"];
+  const profileBg=["#e8f5c0","#d0e4f5","#fde8cc","#fcefc2","#fde8e8"];
   const stratNames=["Vigie","Développement","Optimisation","Réinvention","Contraction/Sortie"];
 
   function scoreToX(s){
