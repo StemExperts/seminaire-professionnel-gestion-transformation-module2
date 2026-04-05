@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       <!-- HEADER -->
       <div class="header">
         <span class="eyebrow">Formation Pratique en Gestion · Module 2</span>
-        <h1>La conjoncture externe<br><em style="font-weight:400;font-style:italic;font-size:.75em;color:var(--ink-soft)">de l'organisation</em></h1>
+        <h1>La conjoncture externe de l'organisation</h1>
         <div class="participant-line"><strong>${fullName}</strong>${poste?` · ${poste}`:''}${pharmacie?` · ${pharmacie}`:''}${date?` · ${formatDate(date)}`:''}${dept?` · ${dept}`:''}</div>
         <div class="divider"></div>
       </div>
@@ -378,26 +378,26 @@ document.addEventListener('DOMContentLoaded',()=>{
       ${hasCap?`
       <div class="matrice-card">
         <h3>Votre position dans la matrice des profils</h3>
-        <p class="matrice-sub">Croisement Performance de l'organisation (axe vertical) × Capacité de réponse (axe horizontal) · Source : Collerette, Lauzier, Schneider, 2021</p>
+        <p class="matrice-sub">Croisement Performance de l'organisation (axe vertical) × Capacité de réponse (axe horizontal)</p>
         <div class="matrice-wrap">${buildMatrice(perfAvg,capAvg)}</div>
       </div>`:''} 
 
       <!-- ENV SCORES -->
       <div class="card">
-        <div class="card-title">Section 1 — Conjoncture externe : effets des tendances dans l'environnement</div>
+        <div class="card-title">Section 1 | Conjoncture externe : effets des tendances dans l'environnement</div>
         ${buildScoreRows(envAns)}
       </div>
 
       <!-- PERF SCORES -->
       <div class="card">
-        <div class="card-title">Section 2 — Performance de l'organisation</div>
+        <div class="card-title">Section 2 | Performance de l'organisation</div>
         ${buildScoreRows(perfAns)}
       </div>
 
       <!-- CAP SCORES -->
       ${hasCap?`
       <div class="card">
-        <div class="card-title">Section 3 — Capacité de réponse de l'organisation</div>
+        <div class="card-title">Section 3 | Capacité de réponse de l'organisation</div>
         ${buildScoreRows(capAns)}
       </div>`:''}
 
