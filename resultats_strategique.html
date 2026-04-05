@@ -118,6 +118,18 @@ const VARIABLES=[
   "Résolution de problèmes","État de la mobilisation","Attitude par rapport à la gestion"
 ];
 
+const SCORE_LABEL_MAP={
+  4:'Excellence',
+  3:'Équilibre',
+  2:'Vulnérabilité',
+  1:'Inertie/Tension',
+  0:'Crise'
+};
+function scoreToLabel(s){
+  const rounded=Math.round(s);
+  return SCORE_LABEL_MAP[rounded]||'—';
+}
+
 const PROFILES=[
   {name:"Excellence",hex:"#95c11f",bg:"#e8f5c0",col:0,min:3.5,max:5,strategie:"Vigie"},
   {name:"Équilibre",hex:"#1d71b8",bg:"#d0e4f5",col:1,min:2.75,max:3.5,strategie:"Développement"},
@@ -451,7 +463,7 @@ function render(params){
   const date=params.get('date')||'';
   const year=(date.match(/20\d{2}/)||[new Date().getFullYear()])[0];
   const scores=[], labels=[];
-  for(let i=1;i<=12;i++){scores.push(parseFloat(params.get('q'+i)||'0'));labels.push(params.get('l'+i)||'—');}
+  for(let i=1;i<=12;i++){scores.push(parseFloat(params.get('q'+i)||'0'));const raw=params.get('l'+i);labels.push(raw&&raw.trim()&&raw.trim()!=='—'?raw.trim():null);}
   const avg=parseFloat((scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2));
   const prof=getProfile(avg);
   const initials=getInitials(prenom,nom);
@@ -484,7 +496,7 @@ function render(params){
 
     <div class="card">
       <div class="card-title">Détail par variable</div>
-      ${scores.map((s,i)=>{const vp=getProfile(s);return`<div class="var-row"><div class="var-name">${VARIABLES[i]}</div><div class="var-track"><div class="var-fill" style="width:${(s/4)*100}%;background:${vp.hex}"></div></div><div class="var-score-num" style="color:${vp.hex}">${s} <span style="font-size:11px;opacity:.7;">(${Math.round(s/4*100)}%)</span></div><div class="var-label-text">${labels[i]}</div></div>`;}).join('')}
+      ${scores.map((s,i)=>{const vp=getProfile(s);const lbl=labels[i]||scoreToLabel(s);return`<div class="var-row"><div class="var-name">${VARIABLES[i]}</div><div class="var-track"><div class="var-fill" style="width:${(s/4)*100}%;background:${vp.hex}"></div></div><div class="var-score-num" style="color:${vp.hex}">${s} <span style="font-size:11px;opacity:.7;">(${Math.round(s/4*100)}%)</span></div><div class="var-label-text" style="color:${vp.hex};font-weight:600;">${lbl}</div></div>`;}).join('')}
     </div>`;
 
   document.getElementById('page-content').innerHTML=html;
