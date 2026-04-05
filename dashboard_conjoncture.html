@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — La conjoncture externe</title>
+<title>Dashboard | La conjoncture externe</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -91,7 +91,7 @@ tr:hover td{background:var(--cream);}
 .bp-excellence{background:#e8f5c0;color:#3b6d11;}
 .bp-equilibre{background:var(--blue-light);color:#0c447c;}
 .bp-vulnerabilite{background:var(--amber-light);color:#856404;}
-.bp-inertie{background:#fce8e3;color:#993c1d;}
+.bp-inertie{background:#fffdcd;color:#993c1d;}
 .bp-crise{background:var(--red-light);color:#721c24;}
 .bp-nd{background:var(--cream-dark);color:var(--ink-soft);}
 
@@ -121,7 +121,7 @@ tr:hover td{background:var(--cream);}
 .upload-drop p{font-size:12px;color:var(--ink-soft);margin-bottom:8px;}
 .upload-drop-btn{background:var(--blue);color:var(--white);border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
 .upload-status-msg{font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;margin-top:8px;display:none;text-align:center;}
-.upload-status-msg.ok{background:var(--green-light);color:#3a5a00;display:block;}
+.upload-status-msg.ok{background:var(--green-light);color:#002169;display:block;}
 .upload-status-msg.err{background:var(--red-light);color:#721c24;display:block;}
 
 .footer{background:var(--ink);color:rgba(255,255,255,.35);text-align:center;font-size:11px;padding:20px;margin-top:48px;}
@@ -131,10 +131,10 @@ tr:hover td{background:var(--cream);}
 .profil-matrix-table{width:100%;border-collapse:collapse;font-size:12px;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
 .profil-matrix-table th,.profil-matrix-table td{padding:10px 12px;text-align:center;border:1px solid rgba(0,0,0,.06);}
 .profil-matrix-table .corner-cell{background:#002169;color:#fff;font-size:10px;font-weight:600;vertical-align:bottom;padding:12px 10px;line-height:1.4;}
-.profil-matrix-table .perf-header{background:#3a5a00;color:#fff;font-weight:700;font-size:11px;}
+.profil-matrix-table .perf-header{background:#002169;color:#fff;font-weight:700;font-size:11px;}
 .profil-matrix-table .cap-header{background:#002169;color:#fff;font-weight:700;font-size:11px;writing-mode:horizontal-tb;}
 .profil-matrix-table .row-header{background:#002169;color:#fff;font-weight:600;font-size:11px;text-align:left;white-space:nowrap;}
-.profil-matrix-table .cell-highlighted{outline:3px solid #002169;outline-offset:-2px;font-weight:900!important;}
+.profil-matrix-table .cell-highlighted{outline:3px solid #ffffff;outline-offset:-2px;font-weight:900!important;}
 .profil-matrix-table td.pm-cell{font-weight:600;font-size:12px;}
 </style>
 </head>
@@ -184,17 +184,17 @@ tr:hover td{background:var(--cream);}
       <div class="kpi-card kc-gold">
         <div class="kpi-label">Conjoncture externe</div>
         <div class="kpi-value" id="kpiEnv">—</div>
-        <div class="kpi-sub">Moy. /5 — 11 facteurs</div>
+        <div class="kpi-sub">Moy. /5 - 11 facteurs</div>
       </div>
       <div class="kpi-card kc-teal">
         <div class="kpi-label">Performance org.</div>
         <div class="kpi-value" id="kpiPerf">—</div>
-        <div class="kpi-sub">Moy. /5 — 3 indicateurs</div>
+        <div class="kpi-sub">Moy. /5 - 3 indicateurs</div>
       </div>
       <div class="kpi-card kc-green">
         <div class="kpi-label">Capacité de réponse</div>
         <div class="kpi-value" id="kpiCap">—</div>
-        <div class="kpi-sub">Moy. /5 — 11 indicateurs</div>
+        <div class="kpi-sub">Moy. /5 - 11 indicateurs</div>
       </div>
     </div>
   </div>
@@ -243,17 +243,17 @@ tr:hover td{background:var(--cream);}
     </div>
     <div class="chart-row">
       <div class="chart-card full">
-        <h3>Section 1 — Conjoncture externe : effets des tendances dans l'environnement</h3>
+        <h3>Section 1 | Conjoncture externe : effets des tendances dans l'environnement</h3>
         <canvas id="chartEnv"></canvas>
       </div>
     </div>
     <div class="chart-row">
       <div class="chart-card">
-        <h3>Section 2 — Performance de l'organisation</h3>
+        <h3>Section 2 | Performance de l'organisation</h3>
         <canvas id="chartPerf"></canvas>
       </div>
       <div class="chart-card">
-        <h3>Section 3 — Capacité de réponse de l'organisation</h3>
+        <h3>Section 3 | Capacité de réponse de l'organisation</h3>
         <canvas id="chartCap"></canvas>
       </div>
     </div>
@@ -385,8 +385,8 @@ const PROFIL_MATRIX=[
 const PROFIL_META={
   'Excellence':    {hex:'#95c11f',bg:'#e8f5c0',cls:'bp-excellence',strategie:'Vigie'},
   'Équilibre':     {hex:'#1d71b8',bg:'#d0e4f5',cls:'bp-equilibre',strategie:'Développement'},
-  'Vulnérabilité': {hex:'#e8a020',bg:'#fff3cd',cls:'bp-vulnerabilite',strategie:'Optimisation'},
-  'Inertie/Tension':{hex:'#e07a5f',bg:'#fce8e3',cls:'bp-inertie',strategie:'Réinvention'},
+  'Vulnérabilité': {hex:'#e8a020',bg:'#fde8cc',cls:'bp-vulnerabilite',strategie:'Optimisation'},
+  'Inertie/Tension':{hex:'#e07a5f',bg:'#fcefc2',cls:'bp-inertie',strategie:'Réinvention'},
   'Crise':         {hex:'#c0392b',bg:'#fde8e8',cls:'bp-crise',strategie:'Contraction/Sortie'},
 };
 
