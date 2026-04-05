@@ -103,7 +103,7 @@ const PROFILES=[
   {name:"Excellence",  strategie:"Vigie",              hex:"#95c11f",bg:"#e8f5c0",col:0,min:3.5,max:5, desc:"Maintenir la position — surveiller l'environnement et anticiper les tendances émergentes pour conserver votre avantage concurrentiel."},
   {name:"Équilibre",   strategie:"Développement",      hex:"#1d71b8",bg:"#d0e4f5",col:1,min:2.75,max:3.5,desc:"Capitaliser sur les forces — investir dans les domaines à fort potentiel pour progresser et renforcer les bases déjà établies."},
   {name:"Vulnérabilité",strategie:"Optimisation",      hex:"#e8a020",bg:"#fde8cc",col:2,min:2.0,max:2.75,desc:"Consolider les bases — prioriser la stabilisation avant toute expansion et identifier les fragilités organisationnelles à corriger."},
-  {name:"Inertie / Tension",strategie:"Réinvention",   hex:"#e07a5f",bg:"#fce8e3",col:3,min:1.0,max:2.0,desc:"Transformation profonde — remettre en question les pratiques établies et renouveler la vision pour sortir de l'immobilisme."},
+  {name:"Inertie / Tension",strategie:"Réinvention",   hex:"#ffed00",bg:"#fce8e3",col:3,min:1.0,max:2.0,desc:"Transformation profonde — remettre en question les pratiques établies et renouveler la vision pour sortir de l'immobilisme."},
   {name:"Crise",       strategie:"Contraction / Sortie",hex:"#c0392b",bg:"#fde8e8",col:4,min:0,max:1.0,desc:"Décisions critiques urgentes — réduire l'exposition et prendre des mesures structurantes de toute urgence."},
 ];
 function getProfile(avg){
@@ -118,8 +118,8 @@ function buildMatrix(scores, year, prof){
   const ROW_H=40, HDR_H=52, TFOOT_H=42, LABEL_W=170, COL_W=120;
   const W=LABEL_W+COL_W*COLS, H=HDR_H+ROW_H*VARIABLES.length+TFOOT_H;
   const fy = HDR_H + ROW_H*VARIABLES.length + (TFOOT_H/2); // footer center Y
-  const profileNames=["Excellence","Équilibre","Vulnérabilité","Inertie/Tension","Crise"];
-  const profileHex=["#95c11f","#1d71b8","#e8a020","#e07a5f","#c0392b"];
+  const profileNames=["Excellence (4)","Équilibre (3)","Vulnérabilité (2)","Inertie/Tension (1)","Crise (0)"];
+  const profileHex=["#95c11f","#1d71b8","#e8a020","#ffed00","#c0392b"];
   const profileBg=["#e8f5c0","#d0e4f5","#fde8cc","#fce8e3","#fde8e8"];
   const stratNames=["Vigie","Développement","Optimisation","Réinvention","Contraction/Sortie"];
 
@@ -235,16 +235,6 @@ function render(params){
       </div>
     </div>
 
-    <div class="echelle-card">
-      <div class="echelle-title">Échelle de référence</div>
-      <div class="echelle-items">
-        <span class="echelle-item"><span class="echelle-dot" style="background:#95c11f"></span><span class="echelle-score">4</span> — Excellence</span>
-        <span class="echelle-item"><span class="echelle-dot" style="background:#1d71b8"></span><span class="echelle-score">3</span> — Équilibre</span>
-        <span class="echelle-item"><span class="echelle-dot" style="background:#e8a020"></span><span class="echelle-score">2</span> — Vulnérabilité</span>
-        <span class="echelle-item"><span class="echelle-dot" style="background:#e07a5f"></span><span class="echelle-score">1</span> — Inertie / Tension</span>
-        <span class="echelle-item"><span class="echelle-dot" style="background:#c0392b"></span><span class="echelle-score">0</span> — Crise</span>
-      </div>
-    </div>
 
     <div class="matrix-wrap">
       <div class="matrix-title">Dynamiques organisationnelles</div>
@@ -254,7 +244,7 @@ function render(params){
     </div>
 
     <div class="radar-section" style="flex-direction:column;gap:16px;">
-      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#002169;align-self:flex-start;">Profil radar — 12 variables organisationnelles</div>
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#002169;align-self:flex-start;">Profil radar - 12 variables organisationnelles</div>
       <canvas id="radarChart" width="400" height="400"></canvas>
     </div>
 
