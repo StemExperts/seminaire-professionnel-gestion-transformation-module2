@@ -17,18 +17,24 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
 
-.topbar{background:var(--ink);color:var(--white);padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;overflow:hidden;}
+.topbar{background:var(--ink);color:var(--white);padding:14px 28px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3);overflow:hidden;}
 .topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ffed00,#95c11f,#0090ac,#1d71b8);}
+.topbar-logo{height:44px;width:auto;mix-blend-mode:screen;}
+.topbar-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;}
+.badge-count{background:var(--gold);color:var(--ink);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.refresh-btn{background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;transition:background .2s;}
+.refresh-btn:hover{background:rgba(255,255,255,.22);}
 .topbar-left{display:flex;align-items:center;gap:14px;}
 .topbar-badge{background:var(--gold);color:var(--ink);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
 .topbar h1{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;}
 .topbar-sub{font-size:12px;color:rgba(255,255,255,.45);}
 .topbar-right{display:flex;align-items:center;gap:10px;}
-.topbar-logo{height:44px;width:auto;mix-blend-mode:screen;}
-.badge-count{background:var(--gold);color:var(--ink);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
-.refresh-btn{background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;transition:background .2s;}
-.refresh-btn:hover{background:rgba(255,255,255,.22);}
-
+.status-dot{width:8px;height:8px;border-radius:50%;background:#555;}
+.status-dot.green{background:var(--green);}
+.status-dot.red{background:var(--red);}
+.status-dot.pulse{background:var(--gold);animation:pulse 1.2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+#statusText{font-size:12px;color:rgba(255,255,255,.5);}
 
 .main{max-width:1240px;margin:0 auto;padding:32px 24px 80px;}
 
@@ -90,6 +96,7 @@ tr:hover td{background:var(--cream);}
 .bp-nd{background:var(--cream-dark);color:var(--ink-soft);}
 
 #participantSelect{border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--cream);outline:none;min-width:220px;}
+#individualTableWrapper{display:none;}
 
 .loading-state{text-align:center;padding:80px 20px;font-size:15px;color:#888;}
 .loader{width:36px;height:36px;border:3px solid var(--cream-dark);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;}
@@ -118,36 +125,17 @@ tr:hover td{background:var(--cream);}
 .upload-status-msg.err{background:var(--red-light);color:#721c24;display:block;}
 
 .footer{background:var(--ink);color:rgba(255,255,255,.35);text-align:center;font-size:11px;padding:20px;margin-top:48px;}
-
-/* ── Matrice de répartition ── */
-.matrice-wrap{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px;}
-.matrice-wrap h3{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--ink);padding:20px 24px 14px;border-bottom:1px solid var(--border);}
-.matrice-wrap .matrice-sub{font-size:11px;color:var(--ink-soft);padding:0 24px 16px;}
-.matrice-scroll{overflow-x:auto;padding:0 24px 24px;}
-.matrice{border-collapse:collapse;width:100%;min-width:640px;font-size:12px;}
-.matrice th,.matrice td{border:1px solid var(--border);padding:0;vertical-align:middle;text-align:center;}
-.matrice .corner{background:var(--ink);color:var(--white);font-size:10px;font-weight:700;padding:10px;text-align:center;min-width:130px;}
-.matrice .col-hdr{padding:10px 8px;font-weight:700;font-size:11px;min-width:110px;}
-.matrice .row-hdr{background:#3a5f28;color:var(--white);font-weight:700;font-size:11px;padding:12px 10px;text-align:left;min-width:130px;line-height:1.35;}
-.matrice .cell{padding:10px 8px;font-size:12px;font-weight:600;line-height:1.3;}
-.matrice .cell-count{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;display:block;line-height:1.1;}
-.matrice .cell-pct{font-size:10px;display:block;margin-top:2px;}
-.matrice .cell-label{font-size:10px;display:block;margin-top:3px;font-weight:400;opacity:.75;}
-/* Couleurs par profil */
-.m-excellence{background:#e8f5c0;} .m-excellence .cell-count{color:#3b6d11;} .m-excellence .col-hdr{background:#4a7c1f;color:var(--white);}
-.m-equilibre{background:#d0e4f5;} .m-equilibre .cell-count{color:#0c447c;} .m-equilibre .col-hdr{background:#3a7abf;color:var(--white);}
-.m-vulnerabilite{background:#fff3cd;} .m-vulnerabilite .cell-count{color:#856404;}
-.m-inertie{background:#d0e4f5;} .m-inertie .cell-count{color:#0c447c;}
-.m-crise{background:#3a7abf;} .m-crise .cell-count{color:var(--white);}
-.m-vide{background:var(--cream);color:var(--ink-soft);}
-/* En-têtes colonnes performance */
-.perf-hdr-tres-elevee{background:#4a7c1f;color:var(--white);}
-.perf-hdr-elevee{background:#6a9e38;color:var(--white);}
-.perf-hdr-moyenne{background:#a8c880;color:var(--ink);}
-.perf-hdr-faible{background:#d0e4f5;color:var(--ink);}
-.perf-hdr-tres-faible{background:#d0e4f5;color:var(--ink);}
-.cell-active{outline:3px solid var(--ink);outline-offset:-2px;}
 .data-section{display:none;}
+
+/* Matrice des profils */
+.profil-matrix-table{width:100%;border-collapse:collapse;font-size:12px;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+.profil-matrix-table th,.profil-matrix-table td{padding:10px 12px;text-align:center;border:1px solid rgba(0,0,0,.06);}
+.profil-matrix-table .corner-cell{background:#002169;color:#fff;font-size:10px;font-weight:600;vertical-align:bottom;padding:12px 10px;line-height:1.4;}
+.profil-matrix-table .perf-header{background:#3a5a00;color:#fff;font-weight:700;font-size:11px;}
+.profil-matrix-table .cap-header{background:#002169;color:#fff;font-weight:700;font-size:11px;writing-mode:horizontal-tb;}
+.profil-matrix-table .row-header{background:#002169;color:#fff;font-weight:600;font-size:11px;text-align:left;white-space:nowrap;}
+.profil-matrix-table .cell-highlighted{outline:3px solid #002169;outline-offset:-2px;font-weight:900!important;}
+.profil-matrix-table td.pm-cell{font-weight:600;font-size:12px;}
 </style>
 </head>
 <body>
@@ -159,7 +147,7 @@ tr:hover td{background:var(--cream);}
   </div>
   <div class="topbar-right">
     <span class="badge-count" id="participantCount">— réponses</span>
-    <button class="refresh-btn" onclick="loadData()">↻ Actualiser</button>
+    <button class="refresh-btn" onclick="loadData()">&#8635; Actualiser</button>
   </div>
 </div>
 
@@ -167,12 +155,11 @@ tr:hover td{background:var(--cream);}
 <div id="mainContent" style="display:none;">
 <div class="main">
 
-  <div class="filter-bar" id="filterBar">
-    <label for="dateFilter">Date de l'atelier</label>
-    <input type="date" id="dateFilter">
-    <button class="btn" onclick="loadData()">&#8635; Actualiser</button>
-    <button class="btn btn-ink" onclick="clearDate()">Toutes les dates</button>
-    <span id="countBadge" style="font-size:13px;font-weight:600;color:var(--ink-soft);margin-left:auto;"></span>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;" id="filterBar">
+    <label style="font-size:12px;font-weight:600;color:#888;">Filtrer par date :</label>
+    <input type="date" id="dateFilter" onchange="render()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;"/>
+    <button onclick="clearDate()" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;background:var(--white);color:#888;">✕ Effacer</button>
+    <span id="countBadge" style="font-size:12px;color:#aaa;"></span>
   </div>
 
   <div class="no-data-box" id="noDataBox">
@@ -218,17 +205,6 @@ tr:hover td{background:var(--cream);}
       <h2>Distribution des profils organisationnels</h2>
       <span>Croisement Performance × Capacité de réponse (slide 8)</span>
     </div>
-    <!-- Matrice Performance × Capacité de réponse -->
-    <div class="matrice-wrap" style="display:none;">
-      <h3>Distribution — Matrice de profils organisationnels</h3>
-      <div class="matrice-sub">% des participants par case · Performance (horizontal) × Capacité de réponse (vertical)</div>
-      <div class="matrice-scroll">
-        <table class="matrice" id="matriceTable">
-          <!-- Remplie dynamiquement par JS -->
-        </table>
-      </div>
-    </div>
-
     <div class="chart-row">
       <div class="chart-card">
         <h3>Répartition des profils du groupe</h3>
@@ -239,6 +215,24 @@ tr:hover td{background:var(--cream);}
         <canvas id="chartDist"></canvas>
       </div>
     </div>
+  </div>
+
+  <!-- SECTION MATRICE RÉPARTITION -->
+  <div class="data-section" id="distributionSection">
+    <div class="section-header">
+      <h2>Répartition des résultats du groupe</h2>
+      <span>Distribution des profils organisationnels par participant</span>
+    </div>
+    <div id="distributionCards" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
+  </div>
+
+  <!-- SECTION MATRICE PROFILS -->
+  <div class="data-section" id="profilMatrixSection">
+    <div class="section-header">
+      <h2>Matrice des profils organisationnels</h2>
+      <span>Performance de l'organisation × Capacité de réponse · Source : Collerette, Lauzier, Schneider, 2021</span>
+    </div>
+    <div id="profilMatrixWrap"></div>
   </div>
 
   <!-- SECTION CHARTS -->
@@ -268,47 +262,39 @@ tr:hover td{background:var(--cream);}
   <!-- INDIVIDUAL TABLE -->
   <div class="data-section" id="individualSection">
     <div class="section-header">
-      <h2>Résultats Individuels</h2>
-      <p style="font-size:12px;color:var(--ink-soft);margin-top:4px;">Sélectionnez un participant pour afficher ses résultats détaillés</p>
+      <h2>Résultats individuels</h2>
+      <span>Sélectionnez un participant pour voir sa fiche</span>
     </div>
     <div class="table-card">
-      <div class="table-top" style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;">
-        <select id="participantSelect" onchange="renderIndividual()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;outline:none;cursor:pointer;min-width:280px;background:var(--cream);color:var(--ink);">
+      <div class="table-top" style="margin-bottom:16px;">
+        <select class="table-search" id="participantSelect" onchange="showIndividual()" style="cursor:pointer;min-width:280px;">
           <option value="">— Sélectionner un participant —</option>
         </select>
-        <div style="font-size:12px;color:var(--ink-soft);" id="individualHint">Choisissez un participant ou « Tous » pour voir le tableau</div>
       </div>
-
-      <!-- Tableau principal — caché jusqu'à sélection -->
-      <div class="table-responsive" id="mainTableWrap" style="display:none;">
-        <table id="mainParticipantTable">
+      <div id="participantsTableWrap" class="table-responsive" style="display:none;">
+        <table id="participantsTable">
           <thead>
             <tr>
               <th>Participant</th><th>Pharmacie</th><th>Poste</th>
-              <th>Conj. ext.<br><span style="font-weight:400;font-size:10px;">moy./5</span></th>
-              <th>Perform.<br><span style="font-weight:400;font-size:10px;">moy./5</span></th>
-              <th>Cap. rép.<br><span style="font-weight:400;font-size:10px;">moy./5</span></th>
-              <th>Profil</th>
-              <th>Score global</th>
-              <th>Résultats</th>
+              <th>Conj. ext.</th><th>Perf.</th><th>Cap. rép.</th>
+              <th>Profil</th><th>Score global</th><th>Résultats</th>
             </tr>
           </thead>
           <tbody id="participantsTableBody"></tbody>
         </table>
       </div>
+    </div>
 
-      <!-- Détail questions — caché jusqu'à sélection individuelle -->
-      <div id="individualDetailWrap" style="display:none;border-top:1px solid var(--border);">
-        <div style="padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-          <h3 id="individualTitle" style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--ink);">—</h3>
-          <a id="individualLink" href="#" target="_blank" class="btn btn-teal" style="font-size:12px;padding:7px 16px;text-decoration:none;">&#8599; Voir page participant</a>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead><tr><th>Section</th><th>Indicateur</th><th>Réponse</th><th>Score /5</th></tr></thead>
-            <tbody id="individualBody"></tbody>
-          </table>
-        </div>
+    <div id="individualTableWrapper" class="table-card" style="display:none;margin-top:16px;">
+      <div class="table-card-header">
+        <h3 id="individualTitle">—</h3>
+        <a id="individualLink" href="#" target="_blank" class="btn btn-teal" style="font-size:12px;padding:7px 16px;text-decoration:none;">&#8599; Voir page participant</a>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>Section</th><th>Indicateur</th><th>Réponse</th><th>Score /5</th></tr></thead>
+          <tbody id="individualBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -363,8 +349,14 @@ tr:hover td{background:var(--cream);}
 </footer>
 
 <script>
-const BASE_ZOHO_URL = 'https://sheet.zoho.com/sheet/published/5875b92cc26b9c0e14dc9c7c56642297c34cd3148178361aa9132aa389e44919?download=csv';
-const PROXIES=[u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,u=>`https://thingproxy.freeboard.io/fetch/${u}`,u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,u=>`https://cors-anywhere.herokuapp.com/${u}`];
+const ZOHO_URL='https://sheet.zohopublic.com/sheet/publishedsheet/255e3c2c3b93d30e224efc58a8ad8fc7c9492f73c6fd42c0c85353c056541343?type=grid&download=csv';
+const PROXIES=[
+  u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+  u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u=>`https://thingproxy.freeboard.io/fetch/${u}`,
+  u=>`https://cors-anywhere.herokuapp.com/${u}`
+];
 const RESULTS_URL='https://stemexperts.github.io/seminaire-professionnel-gestion-transformation-module2/resultats_conjoncture.html';
 
 const SCORE_MAP={'Très défavorable':1,'Défavorable':2,'Neutre':3,'Favorable':4,'Très favorable':5,'Très faible':1,'Faible':2,'Moyenne':3,'Élevée':4,'Très élevée':5,'Non adéquate':1,'Peu adéquate':2,'Tout juste adéquate':3,'Adéquate':4,'Très adéquate':5};
@@ -406,38 +398,43 @@ let allRows=[],charts={};
 window.addEventListener('DOMContentLoaded',()=>{setDefaultDate();loadData();});
 
 function setDefaultDate(){const d=new Date();document.getElementById('dateFilter').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function clearDate(){document.getElementById('dateFilter').value='';loadData();}
+function clearDate(){document.getElementById('dateFilter').value='';render();}
 
 async function loadData(){
   setStatus('pulse','Chargement…');
   document.getElementById('loadingState').style.display='block';
   document.getElementById('mainContent').style.display='none';
-  
+
   const urlWithBust = ZOHO_URL + '&_t=' + Date.now();
-  let text = null;
+  let rows = [];
+
   for(const p of PROXIES){
     try{
       const controller = new AbortController();
       const timer = setTimeout(()=>controller.abort(), 7000);
       const res = await fetch(p(urlWithBust), {cache:'no-store', signal:controller.signal});
       clearTimeout(timer);
-      if(res.ok){
-        const t = await res.text();
-        if(t && t.length > 100){text = t; break;}
+      if(!res.ok) continue;
+
+      const t = await res.text();
+      const candidateRows = extractValidCSVRows(t);
+      if(candidateRows.length){
+        rows = candidateRows;
+        break;
       }
     }catch(e){continue;}
   }
-  if(text){
-    allRows = parseCSV(text);
-    if(allRows.length){
-      document.getElementById('loadingState').style.display='none';
-      document.getElementById('mainContent').style.display='block';
-      setStatus('green', allRows.length+' réponse(s) chargée(s)');
-      render();
-      return;
-    }
+
+  if(rows.length){
+    allRows = rows;
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('mainContent').style.display='block';
+    setStatus('green', allRows.length+' réponse(s) chargée(s)');
+    document.getElementById('participantCount').textContent=allRows.length+' réponse'+(allRows.length>1?'s':'');
+    render();
+    return;
   }
-  // Échec : afficher le Plan B
+
   document.getElementById('loadingState').style.display='none';
   document.getElementById('mainContent').style.display='block';
   setStatus('red','Chargement automatique indisponible');
@@ -474,7 +471,7 @@ function processCSVFile(file){
   }
   const reader = new FileReader();
   reader.onload = e => {
-    const rows = parseCSV(e.target.result);
+    const rows = extractValidCSVRows(e.target.result);
     if(!rows.length){ showUploadStatus('Aucune donnée valide dans ce fichier', false); return; }
     allRows = rows;
     document.getElementById('loadingState').style.display='none';
@@ -491,122 +488,45 @@ function showUploadStatus(msg, ok){
   el.className = 'upload-status-msg '+(ok?'ok':'err');
 }
 
-function normalizeQuotes(s){return s.replace(/\u2018|\u2019/g,"'").replace(/\u201c|\u201d/g,'"');}
+function normalizeQuotes(s){return (s||'').replace(/^\uFEFF/, '').replace(/\r\n?/g,'\n').replace(/\u2018|\u2019/g,"'").replace(/\u201c|\u201d/g,'"');}
 function parseCSV(text){
   const lines=normalizeQuotes(text).trim().split('\n');if(lines.length<2)return[];
   const hdrs=splitLine(lines[0]);
-  return lines.slice(1).map(l=>{const v=splitLine(l);if(v.length<5)return null;const o={};hdrs.forEach((h,i)=>o[h.trim()]=(v[i]||'').trim());return o;}).filter(Boolean);
+  return lines.slice(1).map(l=>{const v=splitLine(l);if(v.length<5)return null;const o={};hdrs.forEach((h,i)=>o[(h||'').trim()]=(v[i]||'').trim());return o;}).filter(Boolean);
 }
-function splitLine(l){const r=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"'){q=!q;continue;}if(ch===','&&!q){r.push(c);c='';continue;}c+=ch;}r.push(c);return r;}
-
-function buildMatrice(enriched){
-  // Matrice 5×5 : lignes = Capacité de réponse (Y), colonnes = Performance (X)
-  // Exactement comme la diapositive 8 du PowerPoint
-  const PERF_BANDS = [
-    {label:'Très élevée',sub:'(5,0 – 4,5)',cls:'perf-hdr-tres-elevee',min:4.5,max:5.01},
-    {label:'Élevée',sub:'(4,4 – 3,5)',cls:'perf-hdr-elevee',min:3.5,max:4.5},
-    {label:'Moyenne',sub:'(3,4 – 2,5)',cls:'perf-hdr-moyenne',min:2.5,max:3.5},
-    {label:'Faible',sub:'(2,4 – 1,5)',cls:'perf-hdr-faible',min:1.5,max:2.5},
-    {label:'Très faible',sub:'(1,4 – 1,0)',cls:'perf-hdr-tres-faible',min:1.0,max:1.5},
-  ];
-  const CAP_BANDS = [
-    {label:'Totalement adéquate',sub:'(5,0 – 4,5)',min:4.5,max:5.01},
-    {label:'Plutôt adéquate',sub:'(4,4 – 3,5)',min:3.5,max:4.5},
-    {label:'Tout juste adéquate',sub:'(3,4 – 2,5)',min:2.5,max:3.5},
-    {label:'Peu adéquate',sub:'(2,4 – 1,5)',min:1.5,max:2.5},
-    {label:'Non adéquate',sub:'(1,4 – 1,0)',min:1.0,max:1.5},
-  ];
-  // Profil par intersection (ligne cap, col perf) — même logique que PROFIL_MATRIX
-  const CELL_PROFIL = [
-    ['Excellence','Équilibre','Vulnérabilité','Inertie/Tension','Crise'],
-    ['Équilibre','Équilibre','Vulnérabilité','Inertie/Tension','Crise'],
-    ['Vulnérabilité','Vulnérabilité','Vulnérabilité','Inertie/Tension','Crise'],
-    ['Inertie/Tension','Inertie/Tension','Inertie/Tension','Inertie/Tension','Crise'],
-    ['Crise','Crise','Crise','Crise','Crise'],
-  ];
-  const PROFIL_CSS = {
-    'Excellence':'m-excellence','Équilibre':'m-equilibre',
-    'Vulnérabilité':'m-vulnerabilite','Inertie/Tension':'m-inertie','Crise':'m-crise'
-  };
-
-  // Participants avec capacité de réponse remplie
-  const withCap = enriched.filter(e=>e.hasCap);
-  const total = withCap.length;
-
-  // Compter par case
-  const counts = Array.from({length:5},()=>Array(5).fill(0));
-  withCap.forEach(e=>{
-    const ci = CAP_BANDS.findIndex(b=>e.ca>=b.min&&e.ca<b.max);
-    const pi = PERF_BANDS.findIndex(b=>e.pa>=b.min&&e.pa<b.max);
-    if(ci>=0&&pi>=0) counts[ci][pi]++;
-  });
-
-  const table = document.getElementById('matriceTable');
-  if(!table) return;
-
-  let html = '';
-
-  // ── Ligne d'en-tête PERFORMANCE (horizontal) ──
-  html += '<thead>';
-  // Ligne 1 : titre "VULNÉRABILITÉ DE L'ORGANISATION" sur toute la largeur (comme dans la diapo)
-  html += `<tr>
-    <td class="corner" rowspan="2" style="vertical-align:middle;">
-      <div style="writing-mode:horizontal-tb;font-size:10px;line-height:1.4;">
-        <span style="opacity:.6;font-weight:400;display:block;margin-bottom:3px;">Capacité de réponse →</span>
-        <span style="opacity:.6;font-weight:400;display:block;">Performance ↓</span>
-      </div>
-    </td>
-    <td colspan="5" style="background:var(--ink);color:var(--white);font-size:11px;font-weight:700;padding:8px;text-align:center;letter-spacing:.05em;">
-      PERFORMANCE DE L'ORGANISATION
-    </td>
-  </tr>`;
-
-  // Ligne 2 : en-têtes des 5 colonnes de performance
-  html += '<tr>';
-  PERF_BANDS.forEach(b=>{
-    html += `<th class="col-hdr ${b.cls}">${b.label}<br><span style="font-weight:400;font-size:10px;">${b.sub}</span></th>`;
-  });
-  html += '</tr></thead>';
-
-  // ── Corps : 5 lignes de capacité de réponse ──
-  html += '<tbody>';
-  CAP_BANDS.forEach((cap,ri)=>{
-    html += '<tr>';
-    // En-tête de ligne (capacité)
-    html += `<th class="row-hdr">${cap.label}<br><span style="font-weight:400;font-size:10px;">${cap.sub}</span></th>`;
-    // 5 cases de profil
-    PERF_BANDS.forEach((perf,ci)=>{
-      const profil = CELL_PROFIL[ri][ci];
-      const cls = PROFIL_CSS[profil] || 'm-vide';
-      const count = counts[ri][ci];
-      const pct = total>0 ? Math.round((count/total)*100) : 0;
-      const isEmpty = count===0;
-      html += `<td class="cell ${cls}" style="${isEmpty?'opacity:.45':''}">`;
-      if(count>0){
-        html += `<span class="cell-count">${count}</span>`;
-        html += `<span class="cell-pct">${pct}%</span>`;
-        html += `<span class="cell-label">${profil}</span>`;
-      } else {
-        html += `<span style="font-size:20px;color:inherit;opacity:.3;">—</span>`;
-        html += `<span class="cell-label" style="opacity:.5">${profil}</span>`;
-      }
-      html += '</td>';
-    });
-    html += '</tr>';
-  });
-  html += '</tbody>';
-
-  table.innerHTML = html;
-
-  // Afficher ou cacher selon si des données capacité existent
-  const wrap = table.closest('.matrice-wrap');
-  if(wrap) wrap.style.display = total>0?'block':'none';
+function splitLine(l){const r=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"'){if(q && l[i+1]==='"'){c+='"';i++;continue;}q=!q;continue;}if(ch===','&&!q){r.push(c);c='';continue;}c+=ch;}r.push(c);return r;}
+function extractValidCSVRows(text){
+  const trimmed=normalizeQuotes(text).trim();
+  if(!trimmed) return [];
+  if(/^<!doctype html/i.test(trimmed) || /^<html/i.test(trimmed) || /^</.test(trimmed)) return [];
+  if(!trimmed.includes('Prénom')) return [];
+  if(!trimmed.includes('Respondent Score Percentage')) return [];
+  const rows=parseCSV(trimmed).filter(r=>((r['Prénom']||'').trim() || (r['Nom']||'').trim()));
+  return rows;
+}
+function zohoDateToISO(value){
+  if(!value) return '';
+  const raw=String(value).trim();
+  if(!raw) return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  const clean=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').toLowerCase();
+  let m=clean.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m=clean.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  const months={janv:'01',jan:'01',fevr:'02',fev:'02',mars:'03',avr:'04',mai:'05',juin:'06',juil:'07',aout:'08',sept:'09',oct:'10',nov:'11',dec:'12'};
+  m=clean.match(/(\d{1,2})\s+([a-z]+)\.?\s+(\d{4})/);
+  if(m){
+    const mon=months[m[2].slice(0,4)]||months[m[2].slice(0,3)]||'';
+    if(mon) return `${m[3]}-${mon}-${m[1].padStart(2,'0')}`;
+  }
+  return '';
 }
 
 function render(){
   const dv=document.getElementById('dateFilter').value;
   let rows=allRows;
-  if(dv)rows=allRows.filter(r=>(r["Date de l'atelier"]||'').replace(/\//g,'-')===dv);
+  if(dv)rows=allRows.filter(r=>zohoDateToISO(r["Date de l'atelier"]||'')===dv);
 
   document.getElementById('countBadge').textContent=rows.length?rows.length+' participant(s)':'';
 
@@ -642,10 +562,34 @@ function render(){
   enriched.forEach(e=>{if(e.profil)pc[e.profil]++;else pc['N/A']++;});
   const pLabels=Object.keys(pc).filter(k=>pc[k]>0);
   const pHex={...Object.fromEntries(Object.entries(PROFIL_META).map(([k,v])=>[k,v.hex])),'N/A':'#aaa'};
-  // Build the matrix table
-  buildMatrice(enriched);
-
   drawDonut('chartProfils',pLabels,pLabels.map(k=>pc[k]),pLabels.map(k=>pHex[k]||'#aaa'));
+
+  // Moyennes groupe pour la matrice
+  const grpPa = avg(enriched.map(e=>e.pa));
+  const grpCa = enriched.filter(e=>e.hasCap).length
+                ? avg(enriched.filter(e=>e.hasCap).map(e=>e.ca))
+                : null;
+  buildProfilMatrix(grpPa, grpCa);
+
+  // Matrice de répartition des profils
+  const distEl = document.getElementById('distributionCards');
+  if(distEl){
+    distEl.innerHTML = Object.entries(PROFIL_META).map(([name, meta])=>{
+      const cnt = pc[name]||0;
+      const pct = enriched.length ? Math.round(cnt/enriched.length*100) : 0;
+      return `<div style="flex:1;min-width:140px;background:${meta.bg};border-radius:12px;padding:16px 14px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;color:${meta.hex};letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">${name}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:${meta.hex};line-height:1;">${pct}%</div>
+        <div style="font-size:11px;color:${meta.hex};margin-top:4px;opacity:.8;">${cnt} participant${cnt!==1?'s':''}</div>
+        <div style="font-size:10px;color:#888;margin-top:4px;">${meta.strategie}</div>
+      </div>`;
+    }).join('')+''+
+    (pc['N/A']>0?`<div style="flex:1;min-width:140px;background:#f5f5f5;border-radius:12px;padding:16px 14px;text-align:center;">
+      <div style="font-size:11px;font-weight:700;color:#aaa;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">N/A</div>
+      <div style="font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:#aaa;line-height:1;">${Math.round((pc['N/A']||0)/enriched.length*100)}%</div>
+      <div style="font-size:11px;color:#aaa;margin-top:4px;opacity:.8;">${pc['N/A']} participant${pc['N/A']!==1?'s':''}</div>
+    </div>`:'');
+  }
 
   // Dist doughnut
   const bins=[0,0,0,0,0];
@@ -661,114 +605,150 @@ function render(){
   // Cap H
   drawBarH('chartCap',CAP_SHORT,CAP_KEYS.map(k=>avg(enriched.map(e=>SCORE_MAP[e[k]]||0))));
 
-  // Participants — populate select dropdown
-  window._enriched=enriched;
-  populateParticipantSelect(enriched);
-  // Reset individual view
-  document.getElementById('mainTableWrap').style.display='none';
-  document.getElementById('individualDetailWrap').style.display='none';
-  document.getElementById('participantSelect').value='';
-  document.getElementById('individualHint').textContent='Choisissez un participant ou « Tous » pour voir le tableau';
-  // Update badge count
-  document.getElementById('participantCount').textContent=enriched.length+' réponse'+(enriched.length>1?'s':'');
-}
-
-function populateParticipantSelect(enriched){
-  const sel=document.getElementById('participantSelect');
-  const current=sel.value;
-  while(sel.options.length>0) sel.remove(0);
-  // Option vide
-  const opt0=document.createElement('option');
-  opt0.value=''; opt0.textContent='— Sélectionner un participant —';
-  sel.appendChild(opt0);
-  // Option "Tous"
-  const optAll=document.createElement('option');
-  optAll.value='__tous__'; optAll.textContent='Tous les participants ('+enriched.length+')';
-  sel.appendChild(optAll);
-  // Options individuelles — triées par nom
-  const sorted=[...enriched].sort((a,b)=>{
-    const na=(`${a['Prénom']||''} ${a['Nom']||''}`).trim();
-    const nb=(`${b['Prénom']||''} ${b['Nom']||''}`).trim();
-    return na.localeCompare(nb,'fr');
-  });
-  sorted.forEach((e,i)=>{
-    const name=(`${e['Prénom']||''} ${e['Nom']||''}`).trim();
-    const originalIdx=window._enriched.indexOf(e);
-    const opt=document.createElement('option');
-    opt.value=originalIdx; opt.textContent=name;
-    sel.appendChild(opt);
-  });
-  // Restaurer sélection si possible
-  if(current) sel.value=current;
-}
-
-function renderIndividual(){
-  const sel=document.getElementById('participantSelect');
-  const val=sel.value;
-  const mainWrap=document.getElementById('mainTableWrap');
-  const detailWrap=document.getElementById('individualDetailWrap');
-  const hint=document.getElementById('individualHint');
-  const enriched=window._enriched||[];
-
-  if(!val){
-    mainWrap.style.display='none';
-    detailWrap.style.display='none';
-    hint.textContent='Choisissez un participant ou « Tous » pour voir le tableau';
-    return;
-  }
-
-  // Déterminer les lignes à afficher
-  let rows=[];
-  if(val==='__tous__'){
-    rows=enriched;
-    detailWrap.style.display='none';
-    hint.textContent=rows.length+' participant'+(rows.length>1?'s':'')+' affiché'+(rows.length>1?'s':'');
-  } else {
-    const idx=parseInt(val);
-    const e=enriched[idx];
-    rows=e?[e]:[];
-    // Afficher le détail question par question
-    if(e){
-      const name=(`${e['Prénom']||''} ${e['Nom']||''}`).trim();
-      document.getElementById('individualTitle').textContent='Détail — '+name;
-      document.getElementById('individualLink').href=buildLink(e);
-      const tbody=document.getElementById('individualBody');
-      tbody.innerHTML='';
-      ENV_KEYS.forEach((k,i)=>{
-        const rep=e[k]||'—';const s=SCORE_MAP[rep]||'—';
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>Conjoncture externe</td><td>${ENV_SHORT[i]}</td><td>${rep}</td><td>${s}/5</td>`;
-        tbody.appendChild(tr);
-      });
-      PERF_KEYS.forEach((k,i)=>{
-        const rep=e[k]||'—';const s=SCORE_MAP[rep]||'—';
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>Performance</td><td>${PERF_FULL[i]}</td><td>${rep}</td><td>${s}/5</td>`;
-        tbody.appendChild(tr);
-      });
-      CAP_KEYS.forEach((k,i)=>{
-        const rep=e[k]||'—';const s=SCORE_MAP[rep]||'—';
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>Capacité de réponse</td><td>${CAP_FULL[i]}</td><td>${s||'N/A'}</td><td>${s||'N/A'}</td>`;
-        tbody.appendChild(tr);
-      });
-      detailWrap.style.display='block';
-      hint.textContent='';
-    }
-  }
-
-  // Remplir le tableau principal
+  // Participants table
   const tbody=document.getElementById('participantsTableBody');
   tbody.innerHTML='';
-  rows.forEach(e=>{
-    const name=(`${e['Prénom']||''} ${e['Nom']||''}`).trim();
+  const sel=document.getElementById('participantSelect');
+  sel.innerHTML='<option value="">— Sélectionner un participant —</option>';
+  // Option "Tous les participants"
+  const optAll=document.createElement('option');
+  optAll.value='__tous__';
+  optAll.textContent='Tous les participants ('+enriched.length+')';
+  sel.appendChild(optAll);
+  window._enriched=enriched;
+
+  enriched.forEach((e,i)=>{
+    const name=`${e['Prénom']||''} ${e['Nom']||''}`.trim();
     const p=e.profil||'—';
     const pm=PROFIL_META[p];
     const tr=document.createElement('tr');
     tr.innerHTML=`<td><strong>${name}</strong></td><td>${e['Pharmacie']||'—'}</td><td>${e['Poste']||'—'}</td><td>${e.ea?e.ea.toFixed(2):'—'}</td><td>${e.pa?e.pa.toFixed(2):'—'}</td><td>${e.hasCap?e.ca.toFixed(2):'N/A'}</td><td>${pm?`<span class="profil-badge ${pm.cls}">${p}</span>`:'—'}</td><td>${e.gPct.toFixed(1)}%</td><td><a href="${buildLink(e)}" target="_blank" class="btn btn-ink" style="font-size:11px;padding:5px 12px;text-decoration:none;">Voir →</a></td>`;
     tbody.appendChild(tr);
+    const opt=document.createElement('option');opt.value=i;opt.textContent=name;sel.appendChild(opt);
   });
-  mainWrap.style.display='block';
+  document.getElementById('individualTableWrapper').style.display='none';
+  document.getElementById('participantsTableWrap').style.display='none';
+  document.getElementById('participantSelect').value='';
+}
+
+function buildProfilMatrix(groupPa, groupCa){
+  const wrap = document.getElementById('profilMatrixWrap');
+  if(!wrap) return;
+
+  const CAP_LABELS  = ['Totalement adéquate (≥4.5)', 'Plutôt adéquate (3.5–4.4)', 'Tout juste adéquate (2.5–3.4)', 'Peu adéquate (1.5–2.4)', 'Non adéquate (1–1.4)'];
+  const PERF_LABELS = ['Très élevée (≥4.5)', 'Élevée (3.5–4.4)', 'Moyenne (2.5–3.4)', 'Faible (1.5–2.4)', 'Très faible (1–1.4)'];
+
+  const groupCapIdx  = groupCa!=null ? bandIdx(groupCa)  : null;
+  const groupPerfIdx = groupPa!=null ? bandIdx(groupPa) : null;
+
+  let html = '<table class="profil-matrix-table">';
+  // Header row
+  html += '<thead><tr>';
+  html += '<th class="corner-cell">Performance org.<br>↓ &nbsp; Capacité réponse →</th>';
+  CAP_LABELS.forEach(l => { html += `<th class="perf-header">${l}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  // Data rows (perf = row index, cap = col index)
+  PROFIL_MATRIX.forEach((row, pi) => {
+    html += '<tr>';
+    html += `<td class="row-header">${PERF_LABELS[pi]}</td>`;
+    row.forEach((profil, ci) => {
+      const meta = PROFIL_META[profil] || {hex:'#aaa', bg:'#f5f5f5'};
+      const isGroup = (pi === groupPerfIdx && ci === groupCapIdx);
+      html += `<td class="pm-cell${isGroup?' cell-highlighted':''}" style="background:${meta.bg};color:${meta.hex};">` +
+              `${profil}${isGroup?' ★':''}` +
+              `</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  // Légende groupe
+  if(groupPa!=null && groupCa!=null){
+    const profil = getProfil(groupPa, groupCa);
+    const meta = PROFIL_META[profil] || {hex:'#aaa', bg:'#f5f5f5'};
+    html += `<div style="margin-top:10px;font-size:12px;color:#666;">
+      ★ Position du groupe — Performance : <strong>${groupPa.toFixed(2)}</strong>/5 · Capacité de réponse : <strong>${groupCa.toFixed(2)}</strong>/5
+      &nbsp;→&nbsp;<span style="font-weight:700;color:${meta.hex}">${profil}</span>
+    </div>`;
+  }
+  wrap.innerHTML = html;
+}
+
+function showIndividual(){
+  const val = document.getElementById('participantSelect').value;
+  const tableWrap = document.getElementById('participantsTableWrap');
+  const detailWrap = document.getElementById('individualTableWrapper');
+  const tbody = document.getElementById('participantsTableBody');
+  const enriched = window._enriched || [];
+
+  // Rien sélectionné — tout cacher
+  if(!val){
+    if(tableWrap) tableWrap.style.display = 'none';
+    if(detailWrap) detailWrap.style.display = 'none';
+    return;
+  }
+
+  // Construire les lignes à afficher selon sélection
+  const toShow = val === '__tous__' ? enriched : enriched.filter((_,i) => i === parseInt(val));
+
+  if(tbody){
+    tbody.innerHTML = '';
+    toShow.forEach(e => {
+      const name = `${e['Prénom']||''} ${e['Nom']||''}`.trim();
+      const p = e.profil || '—';
+      const pm = PROFIL_META[p];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><strong>${name}</strong></td>` +
+        `<td>${e['Pharmacie']||'—'}</td>` +
+        `<td>${e['Poste']||'—'}</td>` +
+        `<td>${e.ea ? e.ea.toFixed(2) : '—'}</td>` +
+        `<td>${e.pa ? e.pa.toFixed(2) : '—'}</td>` +
+        `<td>${e.hasCap ? e.ca.toFixed(2) : 'N/A'}</td>` +
+        `<td>${pm ? `<span class="profil-badge ${pm.cls}">${p}</span>` : '—'}</td>` +
+        `<td>${e.gPct.toFixed(1)}%</td>` +
+        `<td><a href="${buildLink(e)}" target="_blank" class="btn btn-ink" style="font-size:11px;padding:5px 12px;text-decoration:none;">Voir →</a></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  if(tableWrap) tableWrap.style.display = toShow.length ? '' : 'none';
+
+  // Détail question par question (seulement pour un participant individuel)
+  if(val !== '__tous__'){
+    const e = enriched[parseInt(val)];
+    if(e && detailWrap){
+      const name = `${e['Prénom']||''} ${e['Nom']||''}`.trim();
+      const titleEl = document.getElementById('individualTitle');
+      const linkEl  = document.getElementById('individualLink');
+      if(titleEl) titleEl.textContent = 'Détail — ' + name;
+      if(linkEl)  linkEl.href = buildLink(e);
+      const ibody = document.getElementById('individualBody');
+      if(ibody){
+        ibody.innerHTML = '';
+        ENV_KEYS.forEach((k,i)=>{
+          const rep=e[k]||'—'; const s=SCORE_MAP[rep]||'—';
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>Conjoncture externe</td><td>${ENV_SHORT[i]}</td><td>${rep}</td><td>${s}/5</td>`;
+          ibody.appendChild(tr);
+        });
+        PERF_KEYS.forEach((k,i)=>{
+          const rep=e[k]||'—'; const s=SCORE_MAP[rep]||'—';
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>Performance</td><td>${PERF_FULL[i]}</td><td>${rep}</td><td>${s}/5</td>`;
+          ibody.appendChild(tr);
+        });
+        CAP_KEYS.forEach((k,i)=>{
+          const rep=e[k]||'—'; const s=SCORE_MAP[rep]||'—';
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>Capacité de réponse</td><td>${CAP_FULL[i]}</td><td>${s||'N/A'}</td><td>${s||'N/A'}</td>`;
+          ibody.appendChild(tr);
+        });
+      }
+      detailWrap.style.display = 'block';
+    }
+  } else {
+    if(detailWrap) detailWrap.style.display = 'none';
+  }
 }
 
 function buildLink(e){
@@ -794,7 +774,16 @@ function drawDonut(id,labels,data,colors){
   charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:14}}}}});
 }
 function avg(arr){if(!arr.length)return 0;return arr.reduce((a,b)=>a+b,0)/arr.length;}
-function setStatus(t,msg){const d=document.getElementById('statusDot');d.className='status-dot'+(t==='pulse'?' pulse':t==='green'?' green':t==='red'?' red':'');document.getElementById('statusText').textContent=msg;}
+function setStatus(t,msg){
+  const d=document.getElementById('statusDot');
+  const s=document.getElementById('statusText');
+  if(d){
+    d.className='status-dot'+(t==='pulse'?' pulse':t==='green'?' green':t==='red'?' red':'');
+  }
+  if(s){
+    s.textContent=msg;
+  }
+}
 </script>
 </body>
 </html>
