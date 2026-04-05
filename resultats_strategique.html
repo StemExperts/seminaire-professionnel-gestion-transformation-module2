@@ -51,7 +51,26 @@ body::before{content:'';position:fixed;top:-180px;right:-180px;width:520px;heigh
 .profil-strat-sub{font-size:12px;color:var(--ink-soft);font-weight:600;margin-bottom:6px;}
 .profil-desc{font-size:12px;color:#888;line-height:1.6;}
 
-.radar-section{background:var(--white);border-radius:14px;padding:24px;box-shadow:var(--shadow);margin-bottom:24px;display:flex;justify-content:center;}
+.profile-guide-card{border-radius:14px;box-shadow:var(--shadow);margin-bottom:24px;overflow:hidden;}
+.profile-guide-top{padding:20px 28px 16px;border-bottom:1px solid #e8eaf0;}
+.profile-guide-top-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:4px;}
+.profile-guide-top-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--ink);}
+.profile-guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+@media(max-width:600px){.profile-guide-grid{grid-template-columns:1fr;}}
+.profile-guide-col{padding:18px 22px;border-right:1px solid rgba(0,0,0,.08);border-bottom:1px solid rgba(0,0,0,.08);}
+.profile-guide-col:nth-child(even){border-right:none;}
+.profile-guide-col:nth-last-child(-n+2){border-bottom:none;}
+@media(max-width:600px){.profile-guide-col{border-right:none;}}
+.profile-guide-col-head{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+.profile-guide-col-body{font-size:13px;line-height:1.55;color:#222;}
+.profile-guide-col-body ul{margin:0 0 0 16px;padding:0;}
+.profile-guide-col-body li{margin:0 0 5px 0;}
+.profile-guide-col-body ul ul{margin-top:4px;margin-bottom:2px;}
+.profile-guide-col-body .mini-title{display:block;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 5px;color:var(--ink);}
+.profile-guide-footer{padding:12px 22px;color:#666;font-size:10px;}
+.year-ref-row{margin-top:10px;display:flex;justify-content:flex-end;}
+.year-ref-badge{display:inline-flex;align-items:center;justify-content:center;padding:5px 14px;border-radius:999px;font-size:12px;font-weight:700;line-height:1;gap:6px;}
+
 
 /* Matrix */
 .matrix-wrap{background:var(--white);border-radius:14px;padding:24px;box-shadow:var(--shadow);margin-bottom:24px;overflow-x:auto;}
@@ -100,12 +119,243 @@ const VARIABLES=[
 ];
 
 const PROFILES=[
-  {name:"Excellence",  strategie:"Vigie",              hex:"#95c11f",bg:"#e8f5c0",col:0,min:3.5,max:5, desc:"Maintenir la position — surveiller l'environnement et anticiper les tendances émergentes pour conserver votre avantage concurrentiel."},
-  {name:"Équilibre",   strategie:"Développement",      hex:"#1d71b8",bg:"#d0e4f5",col:1,min:2.75,max:3.5,desc:"Capitaliser sur les forces — investir dans les domaines à fort potentiel pour progresser et renforcer les bases déjà établies."},
-  {name:"Vulnérabilité",strategie:"Optimisation",      hex:"#e8a020",bg:"#fde8cc",col:2,min:2.0,max:2.75,desc:"Consolider les bases — prioriser la stabilisation avant toute expansion et identifier les fragilités organisationnelles à corriger."},
-  {name:"Inertie / Tension",strategie:"Réinvention",   hex:"#ffed00",bg:"#fce8e3",col:3,min:1.0,max:2.0,desc:"Transformation profonde — remettre en question les pratiques établies et renouveler la vision pour sortir de l'immobilisme."},
-  {name:"Crise",       strategie:"Contraction / Sortie",hex:"#c0392b",bg:"#fde8e8",col:4,min:0,max:1.0,desc:"Décisions critiques urgentes — réduire l'exposition et prendre des mesures structurantes de toute urgence."},
+  {name:"Excellence",hex:"#95c11f",bg:"#e8f5c0",col:0,min:3.5,max:5,strategie:"Vigie"},
+  {name:"Équilibre",hex:"#1d71b8",bg:"#d0e4f5",col:1,min:2.75,max:3.5,strategie:"Développement"},
+  {name:"Vulnérabilité",hex:"#e8a020",bg:"#fde8cc",col:2,min:2.0,max:2.75,strategie:"Optimisation"},
+  {name:"Inertie/Tension",hex:"#ffed00",bg:"#fce8e3",col:3,min:1.0,max:2.0,strategie:"Réinvention"},
+  {name:"Crise",hex:"#c0392b",bg:"#fde8e8",col:4,min:0,max:1.0,strategie:"Contraction/Sortie"},
 ];
+
+const PROFILE_GUIDES={
+  "Excellence":{
+    title:"Le Profil de l'Excellence",
+    profileLabel:"Excellence",
+    strategieLabel:"Vigie",
+    interventionsLabel:"&nbsp;",
+    pitfallsLabel:"&nbsp;",
+    distinctives:`<ul>
+      <li>Performance élevée</li>
+      <li>Mobilisation élevée</li>
+      <li>Amélioration continue</li>
+      <li>Déploiement d'énergie élevé</li>
+      <li>Danger de repli sur soi</li>
+    </ul>`,
+    strategie:`<ul>
+      <li>Surveillance constante et attentive pour détecter les fluctuations externes ou internes pouvant justifier des ajustements</li>
+    </ul>`,
+    interventions:`<ul>
+      <li>Surveiller l'environnement pour détecter les fluctuations significatives</li>
+      <li>Apporter des ajustements en vue de protéger l'équilibre</li>
+      <li>Entretenir la culture existante (encadrement des nouveaux, promotion des bonnes pratiques, mentorat, travail d'équipe)</li>
+      <li>Garder le personnel informé et vigilant par rapport aux pressions de l'environnement</li>
+    </ul>`,
+    pitfalls:`<ul>
+      <li>Lancer de multiples projets pour garder le personnel motivé</li>
+      <li>S'engager dans des changements radicaux non justifiés</li>
+      <li>Laisser les nouveaux venus livrés à eux-mêmes</li>
+      <li>Protéger à tout prix le statu quo</li>
+      <li>Se replier sur soi</li>
+    </ul>`
+  },
+  "Équilibre":{
+    title:"Le Profil de l'Équilibre",
+    profileLabel:"Équilibre",
+    strategieLabel:"Développement",
+    interventionsLabel:"&nbsp;",
+    pitfallsLabel:"&nbsp;",
+    distinctives:`<ul>
+      <li>Performance satisfaisante</li>
+      <li>Propension à perpétuer le statu quo</li>
+      <li>Résultats intéressants moyennant une dépense d'énergie raisonnable</li>
+    </ul>`,
+    strategie:`<ul>
+      <li>Ajout de compétences ou enrichissement de l'offre de produits/services pour répondre aux besoins nouveaux ou faire mieux avec ce que l'on fait déjà bien</li>
+      <li>Logique d'ajout:
+        <ul>
+          <li>Développement de nouveautés pour rester adapté</li>
+          <li>Réallocation de ressources</li>
+          <li>Remplacement d'activités existantes</li>
+        </ul>
+      </li>
+    </ul>`,
+    interventions:`<ul>
+      <li>Détecter les zones où l'organisation tend à devenir moins performante</li>
+      <li>Continuer d'améliorer sa capacité de réponse par le développement de ses pratiques et ses compétences</li>
+      <li>Agir sur les variables associées aux «revenus» ou à l'offre
+        <ul>
+          <li>Élargir la gamme de produits/services</li>
+          <li>Remplacer des produits/services par de nouveaux</li>
+        </ul>
+      </li>
+    </ul>`,
+    pitfalls:`<ul>
+      <li>Cultiver le statu quo</li>
+      <li>Laisser s'installer une culture de laisser-faire</li>
+      <li>Laisser s'installer une mentalité de repli sur soi</li>
+      <li>Investir beaucoup d'énergie dans les dynamiques internes</li>
+    </ul>`
+  },
+  "Vulnérabilité":{
+    title:"Le Profil de la Vulnérabilité",
+    profileLabel:"Vulnérabilité",
+    strategieLabel:"Optimisation",
+    interventionsLabel:"&nbsp;",
+    pitfallsLabel:"&nbsp;",
+    distinctives:`<ul>
+      <li>Performance mitigée</li>
+      <li>Qualité des prestations inégale</li>
+      <li>Début de mécontentement de la clientèle</li>
+      <li>Augmentation des tensions dans les relations de travail</li>
+      <li>Perte de clients au profit des concurrents</li>
+      <li>Personnel qui exprime du mécontentement</li>
+    </ul>`,
+    strategie:`<ul>
+      <li>Le modèle à la base de l'organisation est toujours approprié</li>
+      <li>Mais des ajustements importants sont requis:
+        <ul>
+          <li>Façons de faire</li>
+          <li>Procédés</li>
+          <li>Mécanismes</li>
+          <li>Processus</li>
+        </ul>
+      </li>
+    </ul>`,
+    interventions:`<ul>
+      <li>Revoir:
+        <ul>
+          <li>Les pratiques</li>
+          <li>Utilisation des ressources</li>
+          <li>Divers systèmes</li>
+        </ul>
+      </li>
+      <li>Faire plus et mieux de ce que l'on fait déjà</li>
+      <li>Agir sur les variables liées aux coûts et aux méthodes
+        <ul>
+          <li>Contrôle des coûts</li>
+          <li>Réduction/meilleure utilisation de l'effectif</li>
+          <li>Simplification des procédures</li>
+          <li>Révision de l'organisation du travail</li>
+          <li>Mise à niveau de la technologie et compétences</li>
+          <li>Révision approches gestion</li>
+        </ul>
+      </li>
+      <li>Efforts sur les éléments fondamentaux
+        <ul>
+          <li>Vision, Mission, clients, services, produits, pratiques</li>
+        </ul>
+      </li>
+      <li>Impliquer le personnel</li>
+      <li>Adopter un mode consultatif avec processus décisionnel rigoureux et clair</li>
+    </ul>`,
+    pitfalls:`<ul>
+      <li>Se concentrer sur les irritants plutôt que sur les aspects du trio client-produit-service</li>
+      <li>Laisser les exigences du quotidien déclasser la mise en œuvre du plan d'action</li>
+      <li>Travailler en équipe sur un mode consensuel et chercher les solutions qui rallient tout le monde (le plus petit dénominateur commun peut conduire à édulcorer les solutions)</li>
+      <li>Se fier aux gens pour prendre en charge les mesures du plan d'action et les mener à terme</li>
+      <li>Se limiter à une rationalisation de l'effectif, entraînant ainsi une détérioration du climat de travail</li>
+      <li>Consacrer beaucoup de temps à la stratégie d'optimisation alors que la situation continue de se dégrader</li>
+    </ul>`
+  },
+  "Inertie/Tension":{
+    title:"Le Profil de l'Inertie/Tension",
+    profileLabel:"Inertie/Tension",
+    strategieLabel:"Réinvention",
+    interventionsLabel:"Crise",
+    pitfallsLabel:"&nbsp;",
+    distinctives:`<ul>
+      <li>Non-performance chronique (efficacité et productivité faibles)</li>
+      <li>Les gens y sont résignés (culture de complaisance)</li>
+      <li>On en attribue la responsabilité à des facteurs externes</li>
+      <li>Le personnel est malheureux et désengagé</li>
+      <li>Des tensions en sourdine et une agitation souterraine sont présentes. On joue avec les limites de la paix sociale</li>
+      <li>On neutralise les efforts d'amélioration</li>
+      <li>On discrédite les personnes qui prennent des initiatives</li>
+      <li>On vit dans une sorte de déni collectif, de loi du silence, de complaisance collective</li>
+    </ul>`,
+    strategie:`<ul>
+      <li>Réaligner l'organisation vers une nouvelle conception, de nouvelles pratiques professionnelles, un fonctionnement différent dans lequel le service au client et la qualité des produits/services sont au centre des décisions et des actions</li>
+    </ul>`,
+    interventions:`<ul>
+      <li>Si les conditions le permettent, on peut provoquer une situation de crise</li>
+    </ul>
+    <span class="mini-title">Petits pas et petits succès</span>
+    <ul>
+      <li>Se concentrer sur client-produit-service</li>
+      <li>Respecter les règles en relations de travail et assurer des conditions de travail adéquates</li>
+      <li>Petites situations-petits chantiers-petits groupes</li>
+      <li>Chantiers portent sur le contenu et les pratiques professionnelles ou organisationnelles</li>
+      <li>Gestionnaires travaillent avec les petits groupes pour les aider à progresser et rester concentrés sur les objectifs poursuivis</li>
+    </ul>`,
+    pitfalls:`<ul>
+      <li>Se concentrer sur les dynamiques internes à l'organisation</li>
+      <li>Faire appel à des discussions de grand groupe</li>
+      <li>Rechercher des prises de décision collégiales</li>
+      <li>S'engager dans de nombreux ou de gros chantiers</li>
+      <li>Mettre en place des groupes de travail sans en assurer une coordination adéquate (les laisser à eux-mêmes)</li>
+    </ul>`
+  },
+  "Crise":{
+    title:"Le Profil de la Crise",
+    profileLabel:"Crise",
+    strategieLabel:"Contraction/Sortie",
+    interventionsLabel:"Contraction",
+    pitfallsLabel:"&nbsp;",
+    distinctives:`<ul>
+      <li>La survie de l'organisation est menacée et on a épuisé les solutions qui semblaient accessibles à l'interne pour résoudre les problèmes</li>
+      <li>Les gens sont agités, irrités, en colère</li>
+      <li>Toute l'attention est mobilisée par les tiraillements de la crise</li>
+      <li>Les rapports de force sont intenses, tendus et polarisés</li>
+    </ul>`,
+    strategie:`<ul>
+      <li>Les choses sont à ce point dégradées qu'il faut tout reprendre à zéro:
+        <ul>
+          <li>Se replier sur les activités que l'on maîtrise déjà</li>
+          <li>Fermer l'organisation</li>
+        </ul>
+      </li>
+    </ul>`,
+    interventions:`<ul>
+      <li>Repositionner stratégiquement l'organisation par rapport à son marché (évaluer les produits/services, choisir ceux qu'on peut gérer en fonction des compétences disponibles)</li>
+      <li>Abandonner les activités non liées à la mission et qui ne contribuent pas à sa performance</li>
+      <li>Adopter une approche directive, une autorité affirmée</li>
+    </ul>
+    <span class="mini-title">Sortie</span>
+    <ul>
+      <li>Liquider l'organisation (disposer des actifs, la place sous tutelle, fusionner, l'engager dans un contrat exclusif de sous-traitance, remplacer massivement ses RH)</li>
+    </ul>`,
+    pitfalls:`<ul>
+      <li>Chercher le consensus</li>
+      <li>Essayer de rallier le plus grand nombre d'adhérents</li>
+      <li>Entreprendre de nombreux chantiers d'envergure</li>
+      <li>Attendre en espérant que les choses changent</li>
+    </ul>`
+  }
+};
+
+function renderProfileGuide(prof){
+  const guide = PROFILE_GUIDES[prof.name] || PROFILE_GUIDES["Crise"];
+  const sections = [
+    { head: "Caractéristiques distinctives", color: prof.hex, body: guide.distinctives },
+    { head: "Stratégie maîtresse",           color: prof.hex, body: guide.strategie },
+    { head: "Interventions adaptées",        color: prof.hex, body: guide.interventions },
+    { head: "Pièges à éviter",               color: "#c0392b", body: guide.pitfalls },
+  ];
+  const cols = sections.map(s =>
+    `<div class="profile-guide-col">
+      <div class="profile-guide-col-head" style="color:${s.color}">${s.head}</div>
+      <div class="profile-guide-col-body">${s.body}</div>
+    </div>`
+  ).join('');
+  return `<div class="profile-guide-card" style="background:${prof.bg};">
+    <div class="profile-guide-top" style="background:${prof.bg};border-bottom:1px solid ${prof.hex}30;">
+      <div class="profile-guide-top-label" style="color:${prof.hex};">Profil organisationnel</div>
+      <div class="profile-guide-top-title" style="color:${prof.hex}">${guide.title}</div>
+    </div>
+    <div class="profile-guide-grid">${cols}</div>
+    <div class="profile-guide-footer" style="border-top:1px solid ${prof.hex}25;">Source : Collerette, P., Lauzier, M., Schneider, R. Le pilotage du changement. Presses de l'université du Québec, 3e édition, Québec, 2021.</div>
+  </div>`;
+}
+
 function getProfile(avg){
   for(const p of PROFILES) if(avg>=p.min&&avg<p.max) return p;
   return avg>=4?PROFILES[0]:PROFILES[4];
@@ -223,29 +473,13 @@ function render(params){
       <div class="summary-card sc3" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;"><div class="sc-label">Stratégie recommandée</div><div class="sc-val" style="font-size:18px;color:${prof.hex};margin-top:auto;margin-bottom:auto;">${prof.strategie}</div></div>
     </div>
 
-    <div class="profil-card">
-      <div class="profil-card-inner">
-        <div class="profil-icon" style="background:${prof.bg};border:3px solid ${prof.hex};"></div>
-        <div class="profil-text">
-          <div class="profil-badge-lg" style="background:${prof.hex}">${prof.name}</div>
-          <div class="profil-strat-name">${prof.strategie}</div>
-          <div class="profil-strat-sub">Stratégie recommandée · Score moyen ${avg} / 4</div>
-          <div class="profil-desc">${prof.desc}</div>
-        </div>
-      </div>
-    </div>
-
+    ${renderProfileGuide(prof)}
 
     <div class="matrix-wrap">
       <div class="matrix-title">Dynamiques organisationnelles</div>
       <div class="matrix-sub">Les indicateurs reliés selon le profil</div>
       <div style="overflow-x:auto">${matrixSVG}</div>
-      <div style="margin-top:10px;font-size:11px;color:#aaa;text-align:right;font-style:italic;">Année de référence : ${year}</div>
-    </div>
-
-    <div class="radar-section" style="flex-direction:column;gap:16px;">
-      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#002169;align-self:flex-start;">Profil radar - 12 variables organisationnelles</div>
-      <canvas id="radarChart" width="400" height="400"></canvas>
+      <div class="year-ref-row"><span class="year-ref-badge" style="background:${prof.hex}18;color:${prof.hex};border:1.5px solid ${prof.hex}40;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${prof.hex};"></span>${year}</span></div>
     </div>
 
     <div class="card">
@@ -254,28 +488,24 @@ function render(params){
     </div>`;
 
   document.getElementById('page-content').innerHTML=html;
-
-  const ptColors = scores.map(s => getProfile(s).hex);
-  new Chart(document.getElementById('radarChart').getContext('2d'),{
-    type:'radar',
-    data:{labels:VARIABLES.map(v=>v.length>16?v.substring(0,15)+'…':v),datasets:[{data:scores,backgroundColor:prof.hex+'22',borderColor:prof.hex,borderWidth:2.5,pointBackgroundColor:ptColors,pointBorderColor:ptColors,pointRadius:6,pointHoverRadius:8}]},
-    options:{responsive:false,scales:{r:{min:0,max:4,ticks:{stepSize:1,font:{size:10},color:'#888',backdropColor:'transparent'},grid:{color:'rgba(0,33,105,0.08)'},pointLabels:{font:{size:10,family:"'DM Sans'"},color:'#002169'}}},plugins:{legend:{display:false}},animation:{duration:600}}
-  });
 }
 
-const params=new URLSearchParams(window.location.search);
-if(params.get('q1')){
-  try{
-    render(params);
-  }catch(err){
-    document.getElementById('page-content').innerHTML=
-      '<div class="error-state">Erreur lors du chargement des résultats.<br><br>'+
-      '<span style="font-size:12px;font-family:monospace;color:#c0392b;">'+err.message+'</span></div>';
-    console.error('Render error:', err);
+window.addEventListener('DOMContentLoaded', function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('q1')) {
+    try {
+      render(params);
+    } catch(err) {
+      document.getElementById('page-content').innerHTML =
+        '<div class="error-state">Erreur lors du chargement des résultats.<br><br>' +
+        '<span style="font-size:12px;font-family:monospace;color:#c0392b;">' + err.message + '</span></div>';
+      console.error('Render error:', err);
+    }
+  } else {
+    document.getElementById('page-content').innerHTML =
+      '<div class="error-state">Aucun résultat à afficher.<br><br>Cette page est accessible via le lien personnalisé généré à la fin du sondage.</div>';
   }
-}else{
-  document.getElementById('page-content').innerHTML='<div class="error-state">Aucun résultat à afficher.<br><br>Cette page est accessible via le lien personnalisé généré à la fin du sondage.</div>';
-}
+});
 </script>
 </body>
 </html>
