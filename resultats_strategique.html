@@ -480,12 +480,10 @@ function render(params){
     </div>
 
     <div class="summary-row">
-      <div class="summary-card sc1"><div class="sc-label">Score moyen</div><div style="font-size:12px;color:#aaa;margin-bottom:2px;">Total : ${scores.reduce((a,b)=>a+b,0).toFixed(0)} / 48</div><div class="sc-val" style="color:${prof.hex}">${avg}</div><div style="font-size:10px;color:#aaa;margin-top:2px;">sur 4.0</div><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:${prof.hex};line-height:1;margin-top:6px;">${Math.round(avg/4*100)}%</div></div>
+      <div class="summary-card sc1" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;"><div class="sc-label">Score moyen</div><div class="sc-val" style="color:${prof.hex};margin-bottom:8px;">${avg}<span style="font-size:1em;">/4</span></div><div class="sc-sub" style="font-size:12px;color:#888;margin-top:0;">${Math.round(avg/4*100)}%</div></div>
       <div class="summary-card sc2" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;"><div class="sc-label">Profil organisationnel</div><div class="sc-val" style="font-size:18px;color:${prof.hex};margin-top:auto;margin-bottom:auto;">${prof.name}</div></div>
       <div class="summary-card sc3" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;"><div class="sc-label">Stratégie recommandée</div><div class="sc-val" style="font-size:18px;color:${prof.hex};margin-top:auto;margin-bottom:auto;">${prof.strategie}</div></div>
     </div>
-
-    ${renderProfileGuide(prof)}
 
     <div class="matrix-wrap">
       <div class="matrix-title">Dynamiques organisationnelles</div>
