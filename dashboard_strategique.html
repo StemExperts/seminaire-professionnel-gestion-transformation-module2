@@ -95,7 +95,6 @@ body::before{content:'';position:fixed;top:-180px;right:-180px;width:520px;heigh
 .var-fill{height:100%;border-radius:4px;transition:width 1s ease;}
 .var-label{font-size:10px;color:#888;margin-top:3px;}
 
-.radar-card{background:var(--white);border-radius:16px;padding:24px 20px;box-shadow:var(--shadow);margin-bottom:24px;display:flex;justify-content:center;align-items:center;}
 
 /* ── Matrice ───────────────────────────────────── */
 .matrix-wrap{background:var(--white);border-radius:14px;padding:24px;box-shadow:var(--shadow);margin-bottom:24px;overflow-x:auto;}
@@ -179,7 +178,7 @@ tr:hover td{background:#f8f9fc;}
         <div>
           <div class="estep-label">Télécharger le CSV depuis Zoho Sheet</div>
           <div class="estep-desc">Cliquez pour ouvrir le lien de téléchargement direct.</div>
-          <input class="csv-link-input" id="csvLinkInput" value="https://sheet.zoho.com/sheet/publishedsheet/5daa2a335fe532709e5a2cb52fb6be78c8d9d0d09adc9b5ff236cf0fae4b7856?type=grid&download=csv" readonly/>
+          <input class="csv-link-input" id="csvLinkInput" value="https://sheet.zohopublic.com/sheet/publishedsheet/332097562c214ab6d58295f7ea79be0d37ff82bd3a81ddcfd203eb02899f382e?type=grid&download=csv" readonly/>
           <button class="download-btn" onclick="window.open(document.getElementById('csvLinkInput').value,'_blank')">⬇ Télécharger le CSV</button>
         </div>
       </div>
@@ -240,7 +239,7 @@ const PROFILES = [
   {name:"Excellence",  strategie:"Vigie",              hex:"#95c11f", bg:"#e8f5c0", col:0, min:3.5, max:4.0},
   {name:"Équilibre",   strategie:"Développement",      hex:"#1d71b8", bg:"#d0e4f5", col:1, min:2.75,max:3.5},
   {name:"Vulnérabilité",strategie:"Optimisation",      hex:"#e8a020", bg:"#fde8cc", col:2, min:2.0, max:2.75},
-  {name:"Inertie/Tension",strategie:"Réinvention",     hex:"#e07a5f", bg:"#fcefc2", col:3, min:1.0, max:2.0},
+  {name:"Inertie/Tension",strategie:"Réinvention",     hex:"#e07a5f", bg:"#fce8e3", col:3, min:1.0, max:2.0},
   {name:"Crise",       strategie:"Contraction/Sortie", hex:"#c0392b", bg:"#fde8e8", col:4, min:0,   max:1.0},
 ];
 function getProfile(avg){
@@ -275,21 +274,64 @@ function dateToISO(s){
 }
 function getRowDate(r){ return dateToISO(r["La réponse est terminée"]||r["La réponse est lancée"]||r["Date de l'atelier"]||''); }
 function getYear(r){ const d=r["Date de l'atelier"]||r["La réponse est terminée"]||''; const m=d.match(/20\d{2}/); return m?m[0]:new Date().getFullYear().toString(); }
-
+function normKey(s){
+  return String(s||'')
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[‘’]/g,"'")
+    .replace(/\s+/g,' ')
+    .trim()
+    .toLowerCase();
+}
+function enrichRow(r){
+  const out = {...r};
+  const keys = Object.keys(r||{});
+  for(let i=1;i<=12;i++){
+    const prefix = i + '.';
+    const labelKey = keys.find(k=>{
+      const nk = normKey(k);
+      return nk.startsWith(prefix) && !nk.includes('[ score ]') && !nk.includes('[ respondent score percentage ]');
+    });
+    const scoreKey = keys.find(k=>{
+      const nk = normKey(k);
+      return nk.startsWith(prefix) && nk.includes('[ score ]');
+    });
+    out[`__label${i}`] = labelKey ? String(r[labelKey]||'').trim() : '';
+    out[`__score${i}`] = scoreKey ? String(r[scoreKey]||'').trim() : '';
+  }
+  return out;
+}
+function getScores(r){
+  return Array.from({length:12}, (_,i)=>{
+    const v = parseFloat(r[`__score${i+1}`]);
+    return isNaN(v) ? NaN : v;
+  });
+}
+function getLabels(r){
+  return Array.from({length:12}, (_,i)=>r[`__label${i+1}`] || '');
+}
 function parseRows(text){
   if(!text||text.length<10) return [];
   const res=Papa.parse(text.trim(),{header:true,skipEmptyLines:true});
-  return (res.data||[]).filter(r=>{
+  return (res.data||[]).map(enrichRow).filter(r=>{
     if(!r||typeof r!=='object') return false;
     const hasId=String(r["Nom"]||r["Prénom"]||r["E-mail"]||'').trim().length>0;
-    const hasScore=SCORE_COLS.some(c=>!isNaN(parseFloat(r[c])));
+    const hasScore=getScores(r).some(v=>!isNaN(v));
     const st=String(r["Response Status"]||'').trim().toUpperCase();
     const ok=!st||(st==='COMPLETED'||st.startsWith('TERMIN'));
     return hasId&&hasScore&&ok;
   });
 }
+function extractValidCSVRows(text){
+  const trimmed = String(text||'').trim();
+  if(!trimmed) return [];
+  if(/^<!doctype html/i.test(trimmed) || /^<html/i.test(trimmed) || /^</.test(trimmed)) return [];
+  if(!trimmed.includes('Prénom')) return [];
+  if(!trimmed.includes("Date de l'atelier")) return [];
+  if(!trimmed.includes('[ Score ]')) return [];
+  return parseRows(trimmed);
+}
 
-let allRows=[], radarChart=null;
+let allRows=[];
 
 function clearDateFilter(){ const el=document.getElementById('dateFilter'); if(el)el.value=''; applyFilters(); }
 function applyFilters() {
@@ -326,7 +368,7 @@ function buildMatrix(rows){
   rows.forEach(r=>{
     const yr=getYear(r);
     if(!yearMap[yr]) yearMap[yr]=Array(12).fill(0).map(()=>[]);
-    SCORE_COLS.forEach((c,i)=>{ const v=parseFloat(r[c]); if(!isNaN(v)) yearMap[yr][i].push(v); });
+    getScores(r).forEach((v,i)=>{ if(!isNaN(v)) yearMap[yr][i].push(v); });
   });
   const years=Object.keys(yearMap).sort();
   // yearAvgs[yr][varIdx] = avg score (0–4)
@@ -446,17 +488,17 @@ function renderDashboard(rows){
   const n=rows.length;
   const year=n>0?getYear(rows[0]):new Date().getFullYear();
 
-  const varAverages=SCORE_COLS.map((col,i)=>{
-    const vals=rows.map(r=>parseFloat(r[col])).filter(v=>!isNaN(v));
+  const varAverages=VARIABLES.map((name,i)=>{
+    const vals=rows.map(r=>getScores(r)[i]).filter(v=>!isNaN(v));
     const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
-    return {name:VARIABLES[i],avg:parseFloat(avg.toFixed(2))};
+    return {name,avg:parseFloat(avg.toFixed(2))};
   });
   const globalAvg=parseFloat((varAverages.reduce((a,b)=>a+b.avg,0)/varAverages.length).toFixed(2));
   const profile=getProfile(globalAvg);
 
   window._dashParticipants = [];
   const participants=rows.map((r,idx)=>{
-    const scores=SCORE_COLS.map(c=>parseFloat(r[c])).map(v=>isNaN(v)?0:v);
+    const scores=getScores(r).map(v=>isNaN(v)?0:v);
     const avg=parseFloat((scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2));
     const resultURL=RESULT_PAGE_URL
       +'?nom='+encodeURIComponent(r["Nom"]||'')
@@ -464,8 +506,8 @@ function renderDashboard(rows){
       +'&pharmacie='+encodeURIComponent(r["Pharmacie"]||'')
       +'&poste='+encodeURIComponent(r["Poste"]||'')
       +'&date='+encodeURIComponent(r["Date de l'atelier"]||'')
-      +SCORE_COLS.map((c,i)=>'&q'+(i+1)+'='+encodeURIComponent(r[c]||'')).join('')
-      +LABEL_COLS.map((c,i)=>'&l'+(i+1)+'='+encodeURIComponent(r[c]||'')).join('');
+      +getScores(r).map((v,i)=>'&q'+(i+1)+'='+encodeURIComponent(isNaN(v)?'':v)).join('')
+      +getLabels(r).map((v,i)=>'&l'+(i+1)+'='+encodeURIComponent(v||'')).join('');
     return {nom:((r["Prénom"]||'')+' '+(r["Nom"]||'')).trim(),pharmacie:r["Pharmacie"]||'—',poste:r["Poste"]||'—',avg,profile:getProfile(avg),resultURL};
   });
   window._dashParticipants = participants;
@@ -488,7 +530,7 @@ function renderDashboard(rows){
   const profCounts={};
   PROFILES.forEach(p=>profCounts[p.name]=0);
   rows.forEach(r=>{
-    const sc=SCORE_COLS.map(c=>parseFloat(r[c])).filter(v=>!isNaN(v));
+    const sc=getScores(r).filter(v=>!isNaN(v));
     if(sc.length){const a=sc.reduce((x,y)=>x+y,0)/sc.length; profCounts[getProfile(a).name]++;}
   });
   const distHTML='<div style="display:flex;gap:12px;flex-wrap:wrap;">'+PROFILES.map(p=>{
@@ -509,15 +551,6 @@ function renderDashboard(rows){
       <div class="kpi k4"><div class="kpi-label">Stratégie recommandée</div><div class="kpi-val" style="font-size:18px;margin-top:6px;color:${profile.hex}">${profile.strategie}</div><div class="kpi-sub">&nbsp;</div></div>
     </div>
 
-    <div class="profil-card">
-      <div class="profil-ring">${ringHTML}</div>
-      <div class="profil-details">
-        <div class="profil-badge" style="background:${profile.hex}">${profile.name}</div>
-        <div class="profil-desc">${profile.desc||''}</div>
-      </div>
-    </div>
-
-
     <div class="section-header"><h2>Répartition des profils organisationnels</h2><p>Distribution du groupe</p></div>
     <div class="card" style="padding:20px;margin-bottom:24px;">${distHTML}</div>
 
@@ -526,10 +559,6 @@ function renderDashboard(rows){
       <div class="matrix-svg-wrap">${matrixSVG}</div>
       ${matYears.length>0?`<div class="legende-row" style="margin-top:14px;margin-bottom:0">${yearLegend}</div>`:''}
     </div>
-
-    <div class="section-header"><h2>Profil collectif | Radar</h2><p>Moyenne des 12 variables organisationnelles</p></div>
-    <div class="radar-card"><canvas id="radarChart" width="420" height="420"></canvas></div>
-
     <div class="section-header"><h2>Résultats par variable</h2></div>
     <div class="grid-2">
       <div class="card" style="padding:20px">${varAverages.slice(0,mid).map(varHTML).join('')}</div>
@@ -554,32 +583,6 @@ function renderDashboard(rows){
   document.getElementById('main-content').innerHTML=html;
   document.getElementById('main-content').style.display='block';
 
-  if(radarChart) radarChart.destroy();
-  radarChart=new Chart(document.getElementById('radarChart').getContext('2d'),{
-    type:'radar',
-    data:{
-      labels:VARIABLES.map(v=>v.length>16?v.substring(0,15)+'…':v),
-      datasets:[
-        // Zone Excellence (3.5–4)
-        {data:Array(12).fill(4),backgroundColor:'rgba(149,193,31,0.13)',borderWidth:0,pointRadius:0,fill:true},
-        // Zone Équilibre (2.75–3.5)
-        {data:Array(12).fill(3.5),backgroundColor:'rgba(29,113,184,0.13)',borderWidth:0,pointRadius:0,fill:true},
-        // Zone Vulnérabilité (2–2.75)
-        {data:Array(12).fill(2.75),backgroundColor:'rgba(232,160,32,0.15)',borderWidth:0,pointRadius:0,fill:true},
-        // Zone Inertie/Tension (1–2)
-        {data:Array(12).fill(2),backgroundColor:'rgba(224,122,95,0.15)',borderWidth:0,pointRadius:0,fill:true},
-        // Zone Crise (0–1)
-        {data:Array(12).fill(1),backgroundColor:'rgba(192,57,43,0.15)',borderWidth:0,pointRadius:0,fill:true},
-        // Données réelles
-        {data:varAverages.map(v=>v.avg),backgroundColor:profile.hex+'33',borderColor:profile.hex,borderWidth:2.5,pointBackgroundColor:profile.hex,pointBorderColor:'white',pointBorderWidth:2,pointRadius:6}
-      ]
-    },
-    options:{
-      responsive:false,
-      scales:{r:{min:0,max:4,ticks:{stepSize:1,font:{size:10},color:'#888',backdropColor:'transparent'},grid:{color:'rgba(0,33,105,0.08)'},pointLabels:{font:{size:10,family:"'DM Sans'"},color:'#002169'}}},
-      plugins:{legend:{display:false}}
-    }
-  });
 }
 
 function showParticipant(){
@@ -606,28 +609,42 @@ function showParticipant(){
 async function loadData() {
   document.getElementById('loadingState').style.display = 'block';
 
-  // Opt. 1 — cache-busting avec &t= + boucle proxy sans AbortController
   const url = ZOHO_URL + '&t=' + Date.now();
-  let text = null;
-  for (const proxy of PROXIES) {
+  let rows = [];
+
+  const candidates = [
+    { label: 'direct', url: url },
+    ...PROXIES.map((proxy, i) => ({ label: 'proxy-' + (i + 1), url: proxy(url) }))
+  ];
+
+  for (const candidate of candidates) {
     try {
-      const r = await fetch(proxy(url), { cache: 'no-store' });
-      if (r.ok) {
-        const t = await r.text();
-        if (t && t.length > 100) { text = t; break; }
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      const r = await fetch(candidate.url, {
+        cache: 'no-store',
+        signal: controller.signal,
+        credentials: 'omit'
+      });
+      clearTimeout(timer);
+      if (!r.ok) continue;
+      const t = await r.text();
+      const candidateRows = extractValidCSVRows(t);
+      if (candidateRows.length) {
+        rows = candidateRows;
+        break;
       }
-    } catch (e) { continue; } // proxy suivant silencieusement
+    } catch (e) {
+      continue;
+    }
   }
 
-  if (text) {
-    const rows = parseRows(text);
-    if (rows.length) {
-      allRows = rows;
-      const df = document.getElementById('dateFilter');
-      if (df && !df.value) df.value = todayISO();
-      applyFilters();
-      return;
-    }
+  if (rows.length) {
+    allRows = rows;
+    const df = document.getElementById('dateFilter');
+    if (df && !df.value) df.value = todayISO();
+    applyFilters();
+    return;
   }
   document.getElementById('loadingState').innerHTML =
     '⚠️ Chargement automatique indisponible. Utilisez le Plan B ci-dessous.';
@@ -639,7 +656,7 @@ function processCSVFile(file){
   if(!file){el.className='upload-status-msg err';el.textContent='Fichier invalide.';return;}
   const reader=new FileReader();
   reader.onload=e=>{
-    const rows=parseRows(e.target.result);
+    const rows=extractValidCSVRows(e.target.result);
     if(!rows.length){el.className='upload-status-msg err';el.textContent='Aucune réponse complète trouvée.';return;}
     allRows=rows;
     const df=document.getElementById('dateFilter');
@@ -648,7 +665,7 @@ function processCSVFile(file){
     el.className='upload-status-msg ok';
     el.textContent='✓ '+rows.length+' participant'+(rows.length>1?'s':'')+' chargé'+(rows.length>1?'s':'')+'.';
   };
-  reader.readAsText(file);
+  reader.readAsText(file, 'UTF-8');
 }
 
 // Opt. 5 — pas de rafraîchissement automatique; le bouton "Actualiser" suffit
