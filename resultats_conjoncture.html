@@ -43,8 +43,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 .sc1::before{background:linear-gradient(90deg,var(--ink),var(--blue));}
 .sc2::before{background:linear-gradient(90deg,var(--blue),#4a90d9);}
 .sc3::before{background:linear-gradient(90deg,var(--teal),#00b8d4);}
-.sc-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#888;margin-bottom:8px;}
-.sc-val{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;line-height:1;}
+.sc-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#888;margin-bottom:10px;}
+.sc-val-wrap{display:flex;align-items:baseline;justify-content:center;gap:4px;margin-bottom:6px;}
+.sc-val{font-family:'Playfair Display',serif;font-size:44px;font-weight:700;line-height:1;}
+.sc-denom{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:#aaa;line-height:1;}
+.sc-indicator{font-size:13px;font-weight:700;margin-bottom:4px;}
 .sc-sub{font-size:11px;color:#888;margin-top:6px;}
 
 /* PROFIL CARD */
@@ -256,6 +259,10 @@ const hasCap=capAns.some(e=>e.score>0);
 const profilName=hasCap?getProfil(perfAvg,capAvg):null;
 const profil=profilName?PROFILS[profilName]:null;
 
+function envLabel(v){if(v>=4.5)return'Très favorable';if(v>=3.5)return'Favorable';if(v>=2.5)return'Neutre';if(v>=1.5)return'Défavorable';return'Très défavorable';}
+function perfLabel(v){if(v>=4.5)return'Très élevée';if(v>=3.5)return'Élevée';if(v>=2.5)return'Moyenne';if(v>=1.5)return'Faible';return'Très faible';}
+function capLabel(v){if(v>=4.5)return'Très adéquate';if(v>=3.5)return'Adéquate';if(v>=2.5)return'Tout juste adéquate';if(v>=1.5)return'Peu adéquate';return'Non adéquate';}
+
 const scoreEnvPct=parseFloat(P.get('scoreEnvPct')||0)||((envAvg/5)*100);
 const scorePerfPct=parseFloat(P.get('scorePerfPct')||0)||((perfAvg/5)*100);
 const scoreCapPct=parseFloat(P.get('scoreCapPct')||0)||(hasCap?(capAvg/5)*100:0);
@@ -333,18 +340,30 @@ document.addEventListener('DOMContentLoaded',()=>{
       <div class="summary-row">
         <div class="summary-card sc1">
           <div class="sc-label">Conjoncture externe</div>
-          <div class="sc-val" style="color:var(--ink)">${scoreEnvPct.toFixed(1)}%</div>
-          <div class="sc-sub">Moy. ${envAvg.toFixed(2)}/5 — 11 facteurs</div>
+          <div class="sc-val-wrap">
+            <div class="sc-val" style="color:var(--ink)">${envAvg.toFixed(2)}</div>
+            <div class="sc-denom">/5</div>
+          </div>
+          <div class="sc-indicator" style="color:var(--ink)">${envLabel(envAvg)}</div>
+          <div class="sc-sub">11 facteurs environnementaux</div>
         </div>
         <div class="summary-card sc2">
           <div class="sc-label">Performance org.</div>
-          <div class="sc-val" style="color:var(--blue)">${scorePerfPct.toFixed(1)}%</div>
-          <div class="sc-sub">Moy. ${perfAvg.toFixed(2)}/5 — 3 indicateurs</div>
+          <div class="sc-val-wrap">
+            <div class="sc-val" style="color:var(--blue)">${perfAvg.toFixed(2)}</div>
+            <div class="sc-denom">/5</div>
+          </div>
+          <div class="sc-indicator" style="color:var(--blue)">${perfLabel(perfAvg)}</div>
+          <div class="sc-sub">3 indicateurs de performance</div>
         </div>
         <div class="summary-card sc3">
           <div class="sc-label">Capacité de réponse</div>
-          <div class="sc-val" style="color:var(--teal)">${hasCap?scoreCapPct.toFixed(1)+'%':'N/A'}</div>
-          <div class="sc-sub">${hasCap?`Moy. ${capAvg.toFixed(2)}/5 — 11 indicateurs`:'Section non complétée'}</div>
+          <div class="sc-val-wrap">
+            <div class="sc-val" style="color:var(--teal)">${hasCap?capAvg.toFixed(2):'N/A'}</div>
+            ${hasCap?`<div class="sc-denom">/5</div>`:''}
+          </div>
+          <div class="sc-indicator" style="color:var(--teal)">${hasCap?capLabel(capAvg):'—'}</div>
+          <div class="sc-sub">${hasCap?'11 indicateurs de capacité':'Section non complétée'}</div>
         </div>
       </div>
 
@@ -404,16 +423,6 @@ document.addEventListener('DOMContentLoaded',()=>{
       <!-- RADAR -->
 
 
-      <!-- LEGEND -->
-      <div class="legend-card">
-        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px">Guide de lecture</div>
-        <div class="legend-row">
-          <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div><span class="score-chip chip-1">Très défavorable / Très faible / Non adéquate (1)</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background:#e07a5f"></div><span class="score-chip chip-2">Défavorable / Faible / Peu adéquate (2)</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background:#e8a020"></div><span class="score-chip chip-3">Neutre / Moyenne / Tout juste adéquate (3)</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background:#1d71b8"></div><span class="score-chip chip-4">Favorable / Élevée / Adéquate (4)</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background:#95c11f"></div><span class="score-chip chip-5">Très favorable / Très élevée / Très adéquate (5)</span></div>
-        </div>
       </div>
 
       <div class="footer">
