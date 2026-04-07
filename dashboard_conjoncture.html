@@ -54,17 +54,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 .section-header h2{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--ink);}
 .section-header span{font-size:12px;color:var(--ink-soft);}
 
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:28px;}
-.kpi-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:20px 20px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-.kc-ink::before{background:linear-gradient(90deg,var(--ink),var(--blue));}
-.kc-blue::before{background:linear-gradient(90deg,var(--blue),#4a90d9);}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px;max-width:780px;margin-left:auto;margin-right:auto;}
+@media(max-width:640px){.kpi-grid{grid-template-columns:1fr;}}
+.kpi-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:28px 24px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden;text-align:center;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
 .kc-gold::before{background:linear-gradient(90deg,var(--gold),var(--gold-light));}
 .kc-teal::before{background:linear-gradient(90deg,var(--teal),#00b8d4);}
 .kc-green::before{background:linear-gradient(90deg,var(--green),#b5d95a);}
-.kpi-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;}
-.kpi-value{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--ink);line-height:1;margin-bottom:4px;}
-.kpi-sub{font-size:11px;color:var(--ink-soft);}
+.kpi-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+.kpi-value-wrap{display:flex;align-items:baseline;justify-content:center;gap:4px;margin-bottom:8px;}
+.kpi-value{font-family:'Playfair Display',serif;font-size:44px;font-weight:700;color:var(--ink);line-height:1;}
+.kpi-denom{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--ink-soft);line-height:1;}
+.kpi-indicator{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.kpi-sub{font-size:10px;color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase;}
 
 .no-data-box{background:var(--white);border:1.5px dashed var(--border);border-radius:var(--radius);padding:48px 24px;text-align:center;color:var(--ink-soft);display:none;}
 .no-data-box .icon{font-size:36px;margin-bottom:12px;}
@@ -171,30 +173,32 @@ tr:hover td{background:var(--cream);}
   <!-- KPIs -->
   <div class="data-section" id="kpiSection">
     <div class="kpi-grid">
-      <div class="kpi-card kc-ink">
-        <div class="kpi-label">Participants</div>
-        <div class="kpi-value" id="kpiCount">—</div>
-        <div class="kpi-sub">pour la sélection</div>
-      </div>
-      <div class="kpi-card kc-blue">
-        <div class="kpi-label">Score global moyen</div>
-        <div class="kpi-value" id="kpiGlobal">—</div>
-        <div class="kpi-sub">% du total possible</div>
-      </div>
       <div class="kpi-card kc-gold">
         <div class="kpi-label">Conjoncture externe</div>
-        <div class="kpi-value" id="kpiEnv">—</div>
-        <div class="kpi-sub">Moy. /5 - 11 facteurs</div>
+        <div class="kpi-value-wrap">
+          <div class="kpi-value" id="kpiEnv">—</div>
+          <div class="kpi-denom">/5</div>
+        </div>
+        <div class="kpi-indicator" id="kpiEnvLabel">—</div>
+        <div class="kpi-sub">11 facteurs environnementaux</div>
       </div>
       <div class="kpi-card kc-teal">
         <div class="kpi-label">Performance org.</div>
-        <div class="kpi-value" id="kpiPerf">—</div>
-        <div class="kpi-sub">Moy. /5 - 3 indicateurs</div>
+        <div class="kpi-value-wrap">
+          <div class="kpi-value" id="kpiPerf">—</div>
+          <div class="kpi-denom">/5</div>
+        </div>
+        <div class="kpi-indicator" id="kpiPerfLabel">—</div>
+        <div class="kpi-sub">3 indicateurs de performance</div>
       </div>
       <div class="kpi-card kc-green">
         <div class="kpi-label">Capacité de réponse</div>
-        <div class="kpi-value" id="kpiCap">—</div>
-        <div class="kpi-sub">Moy. /5 - 11 indicateurs</div>
+        <div class="kpi-value-wrap">
+          <div class="kpi-value" id="kpiCap">—</div>
+          <div class="kpi-denom">/5</div>
+        </div>
+        <div class="kpi-indicator" id="kpiCapLabel">—</div>
+        <div class="kpi-sub">11 indicateurs de capacité</div>
       </div>
     </div>
   </div>
@@ -538,12 +542,21 @@ function render(){
   });
 
   // KPIs
-  document.getElementById('kpiCount').textContent=enriched.length;
-  document.getElementById('kpiGlobal').textContent=avg(enriched.map(e=>e.gPct)).toFixed(1)+'%';
-  document.getElementById('kpiEnv').textContent=avg(enriched.map(e=>e.ea)).toFixed(2);
-  document.getElementById('kpiPerf').textContent=avg(enriched.map(e=>e.pa)).toFixed(2);
+  function envLabel(v){if(v>=4.5)return'Très favorable';if(v>=3.5)return'Favorable';if(v>=2.5)return'Neutre';if(v>=1.5)return'Défavorable';return'Très défavorable';}
+  function perfLabel(v){if(v>=4.5)return'Très élevée';if(v>=3.5)return'Élevée';if(v>=2.5)return'Moyenne';if(v>=1.5)return'Faible';return'Très faible';}
+  function capLabel(v){if(v>=4.5)return'Très adéquate';if(v>=3.5)return'Adéquate';if(v>=2.5)return'Tout juste adéquate';if(v>=1.5)return'Peu adéquate';return'Non adéquate';}
+
+  const avgEnv=avg(enriched.map(e=>e.ea));
+  const avgPerf=avg(enriched.map(e=>e.pa));
   const capRows=enriched.filter(e=>e.hasCap);
-  document.getElementById('kpiCap').textContent=capRows.length?avg(capRows.map(e=>e.ca)).toFixed(2):'N/A';
+  const avgCap=capRows.length?avg(capRows.map(e=>e.ca)):null;
+
+  document.getElementById('kpiEnv').textContent=avgEnv.toFixed(2);
+  document.getElementById('kpiEnvLabel').textContent=envLabel(avgEnv);
+  document.getElementById('kpiPerf').textContent=avgPerf.toFixed(2);
+  document.getElementById('kpiPerfLabel').textContent=perfLabel(avgPerf);
+  document.getElementById('kpiCap').textContent=avgCap!==null?avgCap.toFixed(2):'N/A';
+  document.getElementById('kpiCapLabel').textContent=avgCap!==null?capLabel(avgCap):'—';
 
   // Profil doughnut
   const pc={};Object.keys(PROFIL_META).forEach(k=>pc[k]=0);pc['N/A']=0;
